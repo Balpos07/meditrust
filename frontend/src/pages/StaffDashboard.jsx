@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Activity, CheckCircle, Clock, User } from 'lucide-react';
+import { Activity, CheckCircle, Clock, User, Download } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function StaffDashboard() {
@@ -55,16 +55,53 @@ export default function StaffDashboard() {
     };
   }, []);
 
+  const handleExportCSV = () => {
+    if (invoices.length === 0) return;
+    
+    const headers = ['Invoice ID', 'Patient Name', 'Amount (NGN)', 'Status', 'Date Created', 'Time'];
+    const rows = invoices.map(inv => {
+      const date = new Date(inv.created_at);
+      return [
+        inv.invoice_id.split('-')[0],
+        `"${inv.patient_name}"`, // Quote in case of commas
+        inv.amount,
+        inv.status,
+        date.toLocaleDateString(),
+        date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      ].join(',');
+    });
+    
+    const csvContent = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `meditrust_transactions_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="max-w-6xl mx-auto p-6 pt-24 relative z-10">
-      <div className="flex items-center gap-3 mb-8">
-        <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
-          <Activity className="text-primary w-6 h-6" />
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
+            <Activity className="text-primary w-6 h-6" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold text-text">Live Dispensary Board</h1>
+            <p className="text-muted">Real-time invoice tracking and pharmacy clearance</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-3xl font-bold text-text">Live Dispensary Board</h1>
-          <p className="text-muted">Real-time invoice tracking and pharmacy clearance</p>
-        </div>
+
+        <button 
+          onClick={handleExportCSV}
+          disabled={invoices.length === 0}
+          className="flex items-center gap-2 bg-slate-800 dark:bg-slate-700 hover:bg-slate-700 dark:hover:bg-slate-600 text-white px-4 py-2.5 rounded-lg font-medium transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed border border-slate-700 dark:border-slate-600"
+        >
+          <Download className="w-4 h-4" /> Export CSV
+        </button>
       </div>
 
       <div className="glass-panel p-6">
