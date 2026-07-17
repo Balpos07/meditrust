@@ -7,16 +7,16 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: '#0f172a',
-        card: '#1e293b',
-        primary: '#3b82f6',
+        background: '#f4f7f6',
+        card: '#ffffff',
+        primary: '#0ea5e9',
         success: '#10b981',
         danger: '#ef4444',
-        text: '#f8fafc',
-        muted: '#94a3b8'
+        text: '#1e293b',
+        muted: '#64748b'
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+        sans: ['Fredoka', 'sans-serif'],
       },
       animation: {
         'spin-slow': 'spin 3s linear infinite',

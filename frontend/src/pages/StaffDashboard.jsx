@@ -40,7 +40,7 @@ export default function StaffDashboard() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-white/10 text-muted uppercase text-sm tracking-wider">
+              <tr className="border-b border-slate-200 text-slate-500 uppercase text-sm tracking-wider">
                 <th className="pb-4 pr-4">Invoice ID</th>
                 <th className="pb-4 px-4">Patient Name</th>
                 <th className="pb-4 px-4 text-right">Amount (NGN)</th>
@@ -59,7 +59,7 @@ export default function StaffDashboard() {
                 </tr>
               ) : (
                 invoices.map((inv) => (
-                  <tr key={inv.invoice_id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                  <tr key={inv.invoice_id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
                     <td className="py-4 pr-4 font-mono text-sm text-primary">{inv.invoice_id.split('-')[0]}...</td>
                     <td className="py-4 px-4 font-medium text-text">{inv.patient_name}</td>
                     <td className="py-4 px-4 text-right text-text font-mono">
@@ -70,7 +70,7 @@ export default function StaffDashboard() {
                     </td>
                     <td className="py-4 pl-4 flex justify-center">
                       {inv.status === 'PAID' ? (
-                        <div className="flex items-center gap-2 bg-success/20 text-success px-3 py-1 rounded-full text-sm font-semibold border border-success/30 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+                        <div className="flex items-center gap-2 bg-success/10 text-success px-3 py-1 rounded-full text-sm font-semibold border border-success/20">
                           <CheckCircle className="w-4 h-4" /> PAID & CLEARED
                         </div>
                       ) : (

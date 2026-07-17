@@ -1,43 +1,78 @@
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { useState } from 'react';
+import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import Verify from './pages/Verify';
 import StaffDashboard from './pages/StaffDashboard';
-import { Stethoscope, ShieldCheck, Activity } from 'lucide-react';
+import { Stethoscope, ShieldCheck, Activity, Menu, X } from 'lucide-react';
+
+function Navigation() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const location = useLocation();
+
+  const closeMenu = () => setIsMenuOpen(false);
+
+  const isActive = (path) => location.pathname === path;
+
+  return (
+    <nav className="relative z-50 bg-white shadow-sm">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <div className="flex items-center gap-2 text-slate-800 font-bold text-2xl">
+          <Stethoscope className="text-primary w-7 h-7" />
+          <span>MediTrust</span>
+        </div>
+        
+        {/* Desktop Menu */}
+        <div className="hidden md:flex gap-8">
+          <Link to="/" className={`flex items-center gap-2 transition-colors font-medium ${isActive('/') ? 'text-primary' : 'text-slate-500 hover:text-slate-800'}`}>
+            <Activity className="w-5 h-5" /> Cashier
+          </Link>
+          <Link to="/staff" className={`flex items-center gap-2 transition-colors font-medium ${isActive('/staff') ? 'text-success' : 'text-slate-500 hover:text-slate-800'}`}>
+            <Activity className="w-5 h-5" /> Live Board
+          </Link>
+          <Link to="/verify" className={`flex items-center gap-2 transition-colors font-medium ${isActive('/verify') ? 'text-slate-800' : 'text-slate-500 hover:text-slate-800'}`}>
+            <ShieldCheck className="w-5 h-5" /> Security Scanner
+          </Link>
+        </div>
+
+        {/* Mobile Hamburger Icon */}
+        <button 
+          className="md:hidden p-2 text-slate-600 hover:text-slate-900 focus:outline-none" 
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+        >
+          {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
+      </div>
+
+      {/* Mobile Menu */}
+      {isMenuOpen && (
+        <div className="md:hidden absolute top-16 left-0 w-full bg-white border-b border-slate-200 shadow-lg py-4 px-4 flex flex-col gap-4 animate-in slide-in-from-top-2">
+          <Link to="/" onClick={closeMenu} className={`flex items-center gap-3 p-3 rounded-lg transition-colors font-medium ${isActive('/') ? 'bg-primary/10 text-primary' : 'text-slate-600 hover:bg-slate-50'}`}>
+            <Activity className="w-5 h-5" /> Cashier Terminal
+          </Link>
+          <Link to="/staff" onClick={closeMenu} className={`flex items-center gap-3 p-3 rounded-lg transition-colors font-medium ${isActive('/staff') ? 'bg-success/10 text-success' : 'text-slate-600 hover:bg-slate-50'}`}>
+            <Activity className="w-5 h-5" /> Live Dispensary Board
+          </Link>
+          <Link to="/verify" onClick={closeMenu} className={`flex items-center gap-3 p-3 rounded-lg transition-colors font-medium ${isActive('/verify') ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:bg-slate-50'}`}>
+            <ShieldCheck className="w-5 h-5" /> Security Scanner
+          </Link>
+        </div>
+      )}
+    </nav>
+  );
+}
 
 function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-background relative overflow-hidden">
-        {/* Decorative background blobs */}
-        <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-primary/20 rounded-full blur-[100px] pointer-events-none"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-success/20 rounded-full blur-[100px] pointer-events-none"></div>
-        
-        {/* Navigation Bar */}
-        <nav className="relative z-20 border-b border-white/10 bg-card/50 backdrop-blur-md">
-          <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-text font-bold text-xl">
-              <Stethoscope className="text-primary w-6 h-6" />
-              <span>MediTrust</span>
-            </div>
-            <div className="flex gap-6">
-              <Link to="/" className="flex items-center gap-2 text-muted hover:text-primary transition-colors font-medium">
-                <Activity className="w-4 h-4" /> Cashier
-              </Link>
-              <Link to="/staff" className="flex items-center gap-2 text-muted hover:text-success transition-colors font-medium">
-                <Activity className="w-4 h-4" /> Live Board
-              </Link>
-              <Link to="/verify" className="flex items-center gap-2 text-muted hover:text-white transition-colors font-medium">
-                <ShieldCheck className="w-4 h-4" /> Security Scanner
-              </Link>
-            </div>
-          </div>
-        </nav>
-
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/staff" element={<StaffDashboard />} />
-          <Route path="/verify" element={<Verify />} />
-        </Routes>
+      <div className="min-h-screen bg-background relative flex flex-col">
+        <Navigation />
+        <main className="flex-grow relative">
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/staff" element={<StaffDashboard />} />
+            <Route path="/verify" element={<Verify />} />
+          </Routes>
+        </main>
       </div>
     </BrowserRouter>
   );

@@ -83,7 +83,7 @@ export default function Verify() {
       <div className="glass-panel w-full max-w-md p-8 relative z-10">
         
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-white flex items-center justify-center gap-2">
+          <h1 className="text-2xl font-bold text-text flex items-center justify-center gap-2">
             <Search className="w-6 h-6 text-primary" />
             Security Verifier
           </h1>
@@ -100,21 +100,21 @@ export default function Verify() {
             </button>
 
             <div className="relative flex items-center py-2">
-              <div className="flex-grow border-t border-white/10"></div>
+              <div className="flex-grow border-t border-slate-200"></div>
               <span className="flex-shrink-0 mx-4 text-muted text-sm uppercase">Or type manually</span>
-              <div className="flex-grow border-t border-white/10"></div>
+              <div className="flex-grow border-t border-slate-200"></div>
             </div>
 
             <form onSubmit={onSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1">Invoice ID</label>
+                <label className="block text-xs font-medium text-slate-600 mb-1">Invoice ID</label>
                 <input type="text" required className="input-field py-2" value={invoiceId} onChange={e => setInvoiceId(e.target.value)} />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1">Cryptographic Signature</label>
+                <label className="block text-xs font-medium text-slate-600 mb-1">Cryptographic Signature</label>
                 <input type="text" required className="input-field py-2 font-mono text-xs" value={sig} onChange={e => setSig(e.target.value)} />
               </div>
-              <button type="submit" disabled={loading} className="w-full bg-slate-800 hover:bg-slate-700 text-white transition-colors py-3 rounded-lg flex items-center justify-center font-medium mt-2">
+              <button type="submit" disabled={loading} className="w-full bg-primary hover:bg-sky-600 text-white transition-colors py-3 rounded-lg flex items-center justify-center font-medium mt-2">
                 {loading ? <Loader2 className="animate-spin w-5 h-5" /> : "Verify Receipt"}
               </button>
             </form>
@@ -124,27 +124,27 @@ export default function Verify() {
         {isScanning && (
           <div className="animate-in fade-in duration-300">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-white font-medium">Scanning...</h3>
-              <button onClick={() => setIsScanning(false)} className="text-muted hover:text-white bg-white/5 p-2 rounded-full">
+              <h3 className="text-text font-medium">Scanning...</h3>
+              <button onClick={() => setIsScanning(false)} className="text-muted hover:text-text bg-slate-100 hover:bg-slate-200 transition-colors p-2 rounded-full">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div id="reader" className="rounded-xl overflow-hidden border border-white/10"></div>
+            <div id="reader" className="rounded-xl overflow-hidden border border-slate-200"></div>
             <style>{`
               #reader video {
                 border-radius: 0.75rem !important;
                 object-fit: cover !important;
               }
               #reader__dashboard_section_csr span {
-                color: #f8fafc !important;
+                color: #1e293b !important;
               }
               #reader__dashboard_section_swaplink {
-                color: #3b82f6 !important;
+                color: #0ea5e9 !important;
               }
               #reader__camera_selection {
-                background: #1e293b !important;
-                color: white !important;
-                border: 1px solid rgba(255,255,255,0.1) !important;
+                background: white !important;
+                color: #1e293b !important;
+                border: 1px solid #e2e8f0 !important;
                 padding: 0.5rem !important;
                 border-radius: 0.5rem !important;
               }
@@ -155,36 +155,36 @@ export default function Verify() {
         {result && (
           <div className="animate-in slide-in-from-bottom-4 duration-300">
             {result.is_valid ? (
-              <div className="bg-success/10 border border-success/30 rounded-xl p-6 text-center shadow-[0_0_30px_rgba(16,185,129,0.15)]">
-                <ShieldCheck className="w-16 h-16 text-success mx-auto mb-4 drop-shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+              <div className="bg-success/10 border border-success/30 rounded-xl p-6 text-center">
+                <ShieldCheck className="w-16 h-16 text-success mx-auto mb-4" />
                 <h2 className="text-2xl font-bold text-success mb-1 tracking-wide">VERIFIED</h2>
                 <p className="text-success/80 text-sm font-medium mb-6">Cryptographic Signature Valid</p>
                 
-                <div className="space-y-3 text-left bg-black/20 p-4 rounded-lg">
-                  <div className="flex justify-between items-center border-b border-white/5 pb-2">
-                    <span className="text-slate-400 text-sm">Patient</span>
-                    <span className="text-white font-medium">{result.patient_name}</span>
+                <div className="space-y-3 text-left bg-slate-50 border border-slate-200 p-4 rounded-lg shadow-sm">
+                  <div className="flex justify-between items-center border-b border-slate-200 pb-2">
+                    <span className="text-slate-500 text-sm">Patient</span>
+                    <span className="text-text font-medium">{result.patient_name}</span>
                   </div>
-                  <div className="flex justify-between items-center border-b border-white/5 pb-2">
-                    <span className="text-slate-400 text-sm">Amount Paid</span>
-                    <span className="text-white font-bold">NGN {result.amount?.toLocaleString()}</span>
+                  <div className="flex justify-between items-center border-b border-slate-200 pb-2">
+                    <span className="text-slate-500 text-sm">Amount Paid</span>
+                    <span className="text-text font-bold">NGN {result.amount?.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-400 text-sm">Status</span>
+                    <span className="text-slate-500 text-sm">Status</span>
                     <span className="text-success font-semibold">{result.status}</span>
                   </div>
                 </div>
               </div>
             ) : (
-              <div className="bg-danger/10 border border-danger/30 rounded-xl p-6 text-center shadow-[0_0_30px_rgba(239,68,68,0.15)]">
-                <ShieldAlert className="w-16 h-16 text-danger mx-auto mb-4 drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]" />
+              <div className="bg-danger/10 border border-danger/30 rounded-xl p-6 text-center">
+                <ShieldAlert className="w-16 h-16 text-danger mx-auto mb-4" />
                 <h2 className="text-2xl font-bold text-danger mb-2 tracking-wide">INVALID</h2>
                 <p className="text-danger/80 font-medium">Potential Fraud Detected</p>
-                <p className="text-slate-400 text-sm mt-4">The cryptographic signature does not match the invoice record or the invoice does not exist.</p>
+                <p className="text-slate-600 text-sm mt-4">The cryptographic signature does not match the invoice record or the invoice does not exist.</p>
               </div>
             )}
             
-            <button onClick={() => { setResult(null); setInvoiceId(''); setSig(''); }} className="w-full mt-6 text-sm text-slate-400 hover:text-white transition-colors">
+            <button onClick={() => { setResult(null); setInvoiceId(''); setSig(''); }} className="w-full mt-6 text-sm text-slate-500 hover:text-text transition-colors">
               Verify another receipt
             </button>
           </div>
