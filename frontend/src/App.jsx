@@ -15,7 +15,7 @@ function Navigation() {
 
   return (
     <nav className="relative z-50 bg-white shadow-sm">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <div className="w-full mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-2 text-slate-800 font-bold text-2xl">
           <Stethoscope className="text-primary w-7 h-7" />
           <span>MediTrust</span>
@@ -65,14 +65,16 @@ function App() {
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-background relative flex flex-col">
-        <Navigation />
-        <main className="flex-grow relative">
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/staff" element={<StaffDashboard />} />
-            <Route path="/verify" element={<Verify />} />
-          </Routes>
-        </main>
+        <div className="w-full mx-auto flex flex-col flex-grow">
+          <Navigation />
+          <main className="flex-grow relative">
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/staff" element={<StaffDashboard />} />
+              <Route path="/verify" element={<Verify />} />
+            </Routes>
+          </main>
+        </div>
       </div>
     </BrowserRouter>
   );

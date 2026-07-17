@@ -84,7 +84,7 @@ export default function Dashboard() {
 
   return (
     <div className="container mx-auto px-4 py-12 flex justify-center items-center min-h-screen">
-      <div className="glass-panel w-full max-w-lg p-8 relative z-10">
+      <div className="glass-panel w-full max-w-4xl p-8 md:p-10 relative z-10">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-text tracking-tight">Generate Invoice</h1>
           <p className="text-muted mt-2">Cashier Billing Terminal</p>
@@ -174,38 +174,58 @@ export default function Dashboard() {
                 <button onClick={resetForm} className="btn-primary w-full py-4 text-lg">Create New Invoice</button>
               </div>
             ) : (
-              <div className="space-y-6">
-                <div className="text-center">
-                  <p className="text-muted text-sm uppercase tracking-wider mb-2">Transfer exactly <span className="text-text font-bold">{new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(invoice.amount)}</span> to:</p>
-                  <h3 className="text-xl font-medium text-text">{invoice.bank_name}</h3>
-                  <div className="flex items-center justify-center gap-3 mt-3 bg-slate-50 p-5 rounded-xl border border-slate-200 shadow-sm">
-                    <span className="text-4xl font-bold font-mono tracking-widest text-primary">{invoice.account_number}</span>
-                    <button onClick={copyToClipboard} className="p-3 hover:bg-slate-200 rounded-lg transition-colors text-slate-500 hover:text-text" title="Copy Account">
-                      {copied ? <CheckCircle className="w-6 h-6 text-success" /> : <Copy className="w-6 h-6" />}
-                    </button>
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-8 items-start">
+                {/* Left Side: Payment Instructions */}
+                <div className="md:col-span-3 bg-white border border-slate-200 shadow-sm rounded-2xl p-8 text-center relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-2 bg-primary"></div>
+                  <h3 className="text-slate-500 text-sm font-semibold uppercase tracking-wider mb-2">Payment Required</h3>
+                  <p className="text-slate-800 text-xl font-medium mb-6">Transfer exactly <span className="font-bold text-primary">{new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(invoice.amount)}</span></p>
+                  
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 mb-6">
+                    <p className="text-slate-500 text-sm mb-1">Bank Name</p>
+                    <p className="text-lg font-semibold text-slate-900 mb-4">{invoice.bank_name}</p>
+                    
+                    <p className="text-slate-500 text-sm mb-1">Account Number</p>
+                    <div className="flex items-center justify-center gap-3">
+                      <span className="text-4xl font-bold font-mono tracking-widest text-primary">{invoice.account_number}</span>
+                      <button onClick={copyToClipboard} className="p-2 bg-white border border-slate-200 hover:bg-slate-100 rounded-lg transition-colors text-slate-500 hover:text-slate-800 shadow-sm" title="Copy Account">
+                        {copied ? <CheckCircle className="w-5 h-5 text-success" /> : <Copy className="w-5 h-5" />}
+                      </button>
+                    </div>
                   </div>
-                  <p className="text-muted mt-3 font-medium">{invoice.account_name}</p>
+                  <p className="text-slate-600 font-medium">Account Name: <span className="text-slate-900 font-bold">{invoice.account_name}</span></p>
                 </div>
                 
-                <div className="bg-slate-50 rounded-lg p-4 border border-slate-200 mt-6">
-                  <h4 className="text-sm font-semibold text-muted mb-3 uppercase tracking-wider">Itemized Bill</h4>
-                  <ul className="space-y-2">
-                    {invoice.items.map((item, idx) => (
-                      <li key={idx} className="flex justify-between text-sm text-slate-600">
-                        <span>{item.description}</span>
-                        <span className="font-mono">{new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(item.amount)}</span>
+                {/* Right Side: Bill & Status */}
+                <div className="md:col-span-2 space-y-6">
+                  <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200 shadow-sm">
+                    <h4 className="flex items-center gap-2 font-semibold text-slate-800 mb-4 border-b border-slate-200 pb-3">
+                      <FileText className="w-5 h-5 text-primary" /> Invoice Summary
+                    </h4>
+                    <ul className="space-y-3">
+                      {invoice.items.map((item, idx) => (
+                        <li key={idx} className="flex justify-between text-sm text-slate-600">
+                          <span>{item.description}</span>
+                          <span className="font-mono">{new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(item.amount)}</span>
+                        </li>
+                      ))}
+                      <li className="flex justify-between text-slate-900 font-bold border-t border-slate-200 pt-3 mt-3 text-lg">
+                        <span>Total Due</span>
+                        <span className="font-mono text-primary">{new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(invoice.amount)}</span>
                       </li>
-                    ))}
-                    <li className="flex justify-between text-text font-bold border-t border-slate-200 pt-2 mt-2">
-                      <span>Total</span>
-                      <span className="font-mono">{new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(invoice.amount)}</span>
-                    </li>
-                  </ul>
-                </div>
+                    </ul>
+                  </div>
 
-                <div className="flex flex-col items-center justify-center gap-3 text-primary mt-8">
-                  <Radar className="w-12 h-12 animate-spin-slow opacity-80" />
-                  <span className="font-medium animate-pulse">Awaiting Bank Transfer Confirmation...</span>
+                  <div className="bg-primary/5 border border-primary/20 rounded-2xl p-6 flex flex-col items-center justify-center gap-4 text-center">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-primary/20 rounded-full animate-ping"></div>
+                      <Radar className="w-10 h-10 text-primary relative z-10 animate-spin-slow" />
+                    </div>
+                    <div>
+                      <p className="text-primary font-semibold">Awaiting Payment</p>
+                      <p className="text-xs text-primary/80 mt-1">Listening for bank transfer...</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
