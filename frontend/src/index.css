@@ -3,6 +3,10 @@
 @tailwind utilities;
 
 @layer utilities {
+  .bg-dots-pattern {
+    background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
   .glass-panel {
     @apply bg-card border border-slate-200 shadow-sm rounded-2xl;
   }

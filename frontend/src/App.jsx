@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-do
 import Dashboard from './pages/Dashboard';
 import Verify from './pages/Verify';
 import StaffDashboard from './pages/StaffDashboard';
-import { Menu, X } from 'lucide-react';
+import { Stethoscope, ShieldCheck, Activity, Menu, X } from 'lucide-react';
 
 function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -14,10 +14,10 @@ function Navigation() {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <nav className="sticky top-0 z-50 bg-white shadow-sm border-b border-slate-200">
+    <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md shadow-sm border-b border-slate-200">
       <div className="w-full mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
         <div className="flex items-center gap-2 text-slate-800 font-bold text-2xl">
-          {/* <Stethoscope className="text-primary w-7 h-7" /> */}
+          <Stethoscope className="text-primary w-7 h-7" />
           <span>MediTrust</span>
         </div>
         
@@ -64,8 +64,14 @@ function Navigation() {
 function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-background relative flex flex-col">
-        <div className="w-full mx-auto flex flex-col flex-grow">
+      <div className="min-h-screen bg-background bg-dots-pattern relative flex flex-col overflow-hidden">
+        
+        {/* Premium Background Decorations */}
+        <div className="absolute top-0 inset-x-0 h-[500px] bg-gradient-to-b from-primary/5 to-transparent pointer-events-none z-0"></div>
+        <div className="absolute top-1/4 left-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl -translate-x-1/2 pointer-events-none z-0"></div>
+        <div className="absolute bottom-1/4 right-0 w-[40rem] h-[40rem] bg-success/5 rounded-full blur-3xl translate-x-1/4 pointer-events-none z-0"></div>
+
+        <div className="w-full mx-auto flex flex-col flex-grow relative z-10">
           <Navigation />
           <main className="flex-grow relative">
             <Routes>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { ShieldCheck, ShieldAlert, Search, Loader2, Camera, X } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, Search, Loader2, Camera, X, Hash, Key } from 'lucide-react';
 import { Html5QrcodeScanner } from 'html5-qrcode';
 
 export default function Verify() {
@@ -79,8 +79,8 @@ export default function Verify() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-12 flex justify-center items-start min-h-screen pt-24">
-      <div className="glass-panel w-full max-w-md p-8 relative z-10">
+    <div className="container mx-auto px-4 py-12 flex justify-center items-start min-h-screen pt-12 md:pt-24">
+      <div className="glass-panel w-full max-w-lg p-8 md:p-10 relative z-10">
         
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-text flex items-center justify-center gap-2">
@@ -91,10 +91,10 @@ export default function Verify() {
         </div>
 
         {!result && !isScanning && (
-          <div className="space-y-6">
+          <div className="space-y-8">
             <button 
               onClick={() => setIsScanning(true)} 
-              className="w-full bg-primary/20 border border-primary/50 text-primary hover:bg-primary hover:text-white transition-colors py-4 rounded-xl flex items-center justify-center gap-3 font-semibold text-lg"
+              className="w-full bg-white border-2 border-primary/20 text-primary hover:bg-primary hover:text-white transition-colors py-4 rounded-xl flex items-center justify-center gap-3 font-semibold text-lg shadow-sm"
             >
               <Camera className="w-6 h-6" /> Scan QR Code
             </button>
@@ -105,16 +105,26 @@ export default function Verify() {
               <div className="flex-grow border-t border-slate-200"></div>
             </div>
 
-            <form onSubmit={onSubmit} className="space-y-4">
+            <form onSubmit={onSubmit} className="space-y-5">
               <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1">Invoice ID</label>
-                <input type="text" required className="input-field py-2" value={invoiceId} onChange={e => setInvoiceId(e.target.value)} />
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Invoice ID</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Hash className="h-5 w-5 text-slate-400" />
+                  </div>
+                  <input type="text" required className="input-field pl-11 py-3" value={invoiceId} onChange={e => setInvoiceId(e.target.value)} placeholder="e.g. inv-xyz..." />
+                </div>
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1">Cryptographic Signature</label>
-                <input type="text" required className="input-field py-2 font-mono text-xs" value={sig} onChange={e => setSig(e.target.value)} />
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Cryptographic Signature</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Key className="h-5 w-5 text-slate-400" />
+                  </div>
+                  <input type="text" required className="input-field pl-11 py-3 font-mono text-sm" value={sig} onChange={e => setSig(e.target.value)} placeholder="e.g. 0xabc123..." />
+                </div>
               </div>
-              <button type="submit" disabled={loading} className="w-full bg-primary hover:bg-sky-600 text-white transition-colors py-3 rounded-lg flex items-center justify-center font-medium mt-2">
+              <button type="submit" disabled={loading} className="btn-primary w-full flex items-center justify-center h-12 text-base font-semibold mt-4">
                 {loading ? <Loader2 className="animate-spin w-5 h-5" /> : "Verify Receipt"}
               </button>
             </form>
@@ -160,18 +170,18 @@ export default function Verify() {
                 <h2 className="text-2xl font-bold text-success mb-1 tracking-wide">VERIFIED</h2>
                 <p className="text-success/80 text-sm font-medium mb-6">Cryptographic Signature Valid</p>
                 
-                <div className="space-y-3 text-left bg-slate-50 border border-slate-200 p-4 rounded-lg shadow-sm">
-                  <div className="flex justify-between items-center border-b border-slate-200 pb-2">
-                    <span className="text-slate-500 text-sm">Patient</span>
-                    <span className="text-text font-medium">{result.patient_name}</span>
+                <div className="space-y-4 text-left bg-white border border-success/20 p-5 rounded-xl shadow-sm mt-6">
+                  <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                    <span className="text-slate-500 text-sm">Patient Name</span>
+                    <span className="text-slate-800 font-semibold">{result.patient_name}</span>
                   </div>
-                  <div className="flex justify-between items-center border-b border-slate-200 pb-2">
+                  <div className="flex justify-between items-center border-b border-slate-100 pb-3">
                     <span className="text-slate-500 text-sm">Amount Paid</span>
-                    <span className="text-text font-bold">NGN {result.amount?.toLocaleString()}</span>
+                    <span className="text-slate-900 font-bold font-mono text-lg">NGN {result.amount?.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-500 text-sm">Status</span>
-                    <span className="text-success font-semibold">{result.status}</span>
+                    <span className="text-slate-500 text-sm">Clearance Status</span>
+                    <span className="text-success font-bold bg-success/10 px-3 py-1 rounded-full text-xs tracking-wider uppercase">{result.status}</span>
                   </div>
                 </div>
               </div>
