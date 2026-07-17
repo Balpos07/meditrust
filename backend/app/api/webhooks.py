@@ -11,6 +11,7 @@ from app.db.models import Invoice, InvoiceStatus, Payment
 from app.api.dependencies import get_db_session
 from app.core.config import settings
 from app.tasks.receipts import generate_receipt_and_notify_patient
+from app.core.websockets import manager
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -79,5 +80,55 @@ async def monnify_webhook(
                 payment_ref=payment_reference
             )
             
+            # Broadcast over WebSockets
+            await manager.broadcast(json.dumps({
+                "type": "INVOICE_PAID",
+                "invoice_id": str(invoice.id)
+            }))
+            
     # Always return 200 OK instantly for webhooks
     return {"status": "ok"}
+
+from pydantic import BaseModel
+class SimulatePayload(BaseModel):
+    payment_reference: str
+    amount: float
+
+@router.post("/monnify/simulate")
+async def simulate_webhook(
+    payload: SimulatePayload,
+    db: AsyncSession = Depends(get_db_session)
+):
+    """DEV ONLY: Allows frontend to simulate a webhook without needing signatures"""
+    result = await db.execute(
+        select(Invoice).options(selectinload(Invoice.patient)).where(Invoice.payment_reference == payload.payment_reference)
+    )
+    invoice = result.scalars().first()
+    
+    if invoice and invoice.status != InvoiceStatus.PAID:
+        invoice.status = InvoiceStatus.PAID
+        
+        payment = Payment(
+            invoice_id=invoice.id,
+            transaction_reference="DEV_SIM_" + payload.payment_reference,
+            amount_paid=payload.amount,
+            settled_amount=payload.amount
+        )
+        db.add(payment)
+        await db.commit()
+        
+        generate_receipt_and_notify_patient.delay(
+            invoice_id=str(invoice.id),
+            amount=float(payload.amount),
+            phone_number=invoice.patient.phone_number,
+            patient_name=invoice.patient.full_name,
+            payment_ref=payload.payment_reference
+        )
+        
+        # Broadcast over WebSockets
+        await manager.broadcast(json.dumps({
+            "type": "INVOICE_PAID",
+            "invoice_id": str(invoice.id)
+        }))
+        
+    return {"status": "simulated"}

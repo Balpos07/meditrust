@@ -23,11 +23,36 @@ export default function StaffDashboard() {
     }
   };
 
-  // Poll every 3 seconds for updates
   useEffect(() => {
     fetchInvoices();
-    const interval = setInterval(fetchInvoices, 3000);
-    return () => clearInterval(interval);
+    
+    const ws = new WebSocket('ws://localhost:8000/api/v1/ws/live-board');
+    
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'INVOICE_PAID') {
+          setInvoices(prev => prev.map(inv => 
+            inv.invoice_id === data.invoice_id ? { ...inv, status: 'PAID' } : inv
+          ));
+        } else if (data.type === 'NEW_INVOICE') {
+          fetchInvoices(); // Refresh the list to grab the newly created invoice
+        }
+      } catch (err) {
+        console.error("Failed to parse websocket message", err);
+      }
+    };
+    
+    const pingInterval = setInterval(() => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send("ping");
+      }
+    }, 30000);
+
+    return () => {
+      clearInterval(pingInterval);
+      ws.close();
+    };
   }, []);
 
   return (

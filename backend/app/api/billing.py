@@ -13,6 +13,8 @@ from app.core.config import settings
 from app.db.models import User, Invoice, InvoiceStatus, InvoiceItem, Staff, StaffRole
 from app.api.dependencies import get_db_session, require_role
 from app.services.monnify import monnify_client
+from app.core.websockets import manager
+import json
 
 router = APIRouter()
 
@@ -100,6 +102,12 @@ async def create_invoice(
     invoice.dynamic_bank_name = bank_name
     await db.commit()
     await db.refresh(invoice)
+    
+    # 5. Broadcast WebSockets Event
+    await manager.broadcast(json.dumps({
+        "type": "NEW_INVOICE",
+        "invoice_id": str(invoice.id)
+    }))
     
     return InvoiceResponse(
         invoice_id=str(invoice.id),

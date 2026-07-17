@@ -11,22 +11,32 @@ export default function Dashboard() {
   const [copied, setCopied] = useState(false);
   const { token } = useAuth();
 
-  // Poll for payment status
+  // Listen for WebSocket updates
   useEffect(() => {
     if (!invoice || paid) return;
-    const interval = setInterval(async () => {
+    
+    const ws = new WebSocket('ws://localhost:8000/api/v1/ws/live-board');
+    
+    ws.onmessage = (event) => {
       try {
-        const res = await fetch(`http://localhost:8000/api/v1/billing/invoice/${invoice.invoice_id}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await res.json();
-        if (data.status === 'PAID') setPaid(true);
+        const data = JSON.parse(event.data);
+        if (data.type === 'INVOICE_PAID' && data.invoice_id === invoice.invoice_id) {
+          setPaid(true);
+        }
       } catch (err) {
-        console.error("Polling error", err);
+        console.error("WebSocket message error", err);
       }
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [invoice, paid, token]);
+    };
+
+    const pingInterval = setInterval(() => {
+      if (ws.readyState === WebSocket.OPEN) ws.send("ping");
+    }, 30000);
+
+    return () => {
+      clearInterval(pingInterval);
+      ws.close();
+    };
+  }, [invoice, paid]);
 
   const handleAddItem = () => {
     setItems([...items, { description: '', amount: '' }]);
@@ -88,6 +98,25 @@ export default function Dashboard() {
     setFormData({ full_name: '', phone_number: '' });
     setItems([{ description: 'Consultation Fee', amount: '5000' }]);
   }
+
+  const handleSimulatePayment = async () => {
+    try {
+      await fetch('http://localhost:8000/api/v1/webhooks/monnify/simulate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          payment_reference: invoice.payment_reference,
+          amount: invoice.amount
+        })
+      });
+      // The poller will catch it on the next tick!
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-12 flex justify-center items-center min-h-screen">
@@ -232,6 +261,14 @@ export default function Dashboard() {
                       <p className="text-primary font-semibold">Awaiting Payment</p>
                       <p className="text-xs text-primary/80 mt-1">Listening for bank transfer...</p>
                     </div>
+                    
+                    {/* DEV ONLY BUTTON */}
+                    <button 
+                      onClick={handleSimulatePayment}
+                      className="mt-4 text-xs font-medium bg-primary/20 text-primary hover:bg-primary/30 px-3 py-1.5 rounded-full transition-colors border border-primary/30"
+                    >
+                      🧪 Simulate Payment (Dev)
+                    </button>
                   </div>
                 </div>
               </div>
