@@ -80,34 +80,34 @@ export default function Verify() {
 
   return (
     <div className="container mx-auto px-4 py-12 flex justify-center items-start min-h-screen pt-12 md:pt-24">
-      <div className="glass-panel w-full max-w-lg p-8 md:p-10 relative z-10">
+      <div className="glass-panel w-full max-w-lg p-8 md:p-10 relative z-10 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-2xl transition-all duration-500">
         
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-text flex items-center justify-center gap-2">
+          <h1 className="text-2xl font-bold text-text dark:text-white flex items-center justify-center gap-2">
             <Search className="w-6 h-6 text-primary" />
             Security Verifier
           </h1>
-          <p className="text-muted text-sm mt-1">Scan Receipt QR to clear patient</p>
+          <p className="text-muted dark:text-slate-400 text-sm mt-1">Scan Receipt QR to clear patient</p>
         </div>
 
         {!result && !isScanning && (
           <div className="space-y-8">
             <button 
               onClick={() => setIsScanning(true)} 
-              className="w-full bg-white border-2 border-primary/20 text-primary hover:bg-primary hover:text-white transition-colors py-4 rounded-xl flex items-center justify-center gap-3 font-semibold text-lg shadow-sm"
+              className="w-full bg-white dark:bg-slate-900 border-2 border-primary/20 dark:border-primary/50 text-primary hover:bg-primary hover:text-white transition-colors py-4 rounded-xl flex items-center justify-center gap-3 font-semibold text-lg shadow-sm"
             >
               <Camera className="w-6 h-6" /> Scan QR Code
             </button>
 
             <div className="relative flex items-center py-2">
-              <div className="flex-grow border-t border-slate-200"></div>
-              <span className="flex-shrink-0 mx-4 text-muted text-sm uppercase">Or type manually</span>
-              <div className="flex-grow border-t border-slate-200"></div>
+              <div className="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
+              <span className="flex-shrink-0 mx-4 text-muted dark:text-slate-500 text-sm uppercase">Or type manually</span>
+              <div className="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
             </div>
 
             <form onSubmit={onSubmit} className="space-y-5">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Invoice ID</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Invoice ID</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Hash className="h-5 w-5 text-slate-400" />
@@ -116,7 +116,7 @@ export default function Verify() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Cryptographic Signature</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Cryptographic Signature</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Key className="h-5 w-5 text-slate-400" />
@@ -165,32 +165,32 @@ export default function Verify() {
         {result && (
           <div className="animate-in slide-in-from-bottom-4 duration-300">
             {result.is_valid ? (
-              <div className="bg-success/10 border border-success/30 rounded-xl p-6 text-center">
+              <div className="bg-success/10 border border-success/30 dark:border-success/50 rounded-xl p-6 text-center">
                 <ShieldCheck className="w-16 h-16 text-success mx-auto mb-4" />
                 <h2 className="text-2xl font-bold text-success mb-1 tracking-wide">VERIFIED</h2>
                 <p className="text-success/80 text-sm font-medium mb-6">Cryptographic Signature Valid</p>
                 
-                <div className="space-y-4 text-left bg-white border border-success/20 p-5 rounded-xl shadow-sm mt-6">
-                  <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-                    <span className="text-slate-500 text-sm">Patient Name</span>
-                    <span className="text-slate-800 font-semibold">{result.patient_name}</span>
+                <div className="space-y-4 text-left bg-white dark:bg-slate-900 border border-success/20 dark:border-success/40 p-5 rounded-xl shadow-sm mt-6">
+                  <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+                    <span className="text-slate-500 dark:text-slate-400 text-sm">Patient Name</span>
+                    <span className="text-slate-800 dark:text-slate-200 font-semibold">{result.patient_name}</span>
                   </div>
-                  <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-                    <span className="text-slate-500 text-sm">Amount Paid</span>
-                    <span className="text-slate-900 font-bold font-mono text-lg">NGN {result.amount?.toLocaleString()}</span>
+                  <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+                    <span className="text-slate-500 dark:text-slate-400 text-sm">Amount Paid</span>
+                    <span className="text-slate-900 dark:text-white font-bold font-mono text-lg">NGN {result.amount?.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-500 text-sm">Clearance Status</span>
-                    <span className="text-success font-bold bg-success/10 px-3 py-1 rounded-full text-xs tracking-wider uppercase">{result.status}</span>
+                    <span className="text-slate-500 dark:text-slate-400 text-sm">Clearance Status</span>
+                    <span className="text-success font-bold bg-success/10 dark:bg-success/20 px-3 py-1 rounded-full text-xs tracking-wider uppercase">{result.status}</span>
                   </div>
                 </div>
               </div>
             ) : (
-              <div className="bg-danger/10 border border-danger/30 rounded-xl p-6 text-center">
+              <div className="bg-danger/10 border border-danger/30 dark:border-danger/50 rounded-xl p-6 text-center">
                 <ShieldAlert className="w-16 h-16 text-danger mx-auto mb-4" />
                 <h2 className="text-2xl font-bold text-danger mb-2 tracking-wide">INVALID</h2>
                 <p className="text-danger/80 font-medium">Potential Fraud Detected</p>
-                <p className="text-slate-600 text-sm mt-4">The cryptographic signature does not match the invoice record or the invoice does not exist.</p>
+                <p className="text-slate-600 dark:text-slate-400 text-sm mt-4">The cryptographic signature does not match the invoice record or the invoice does not exist.</p>
               </div>
             )}
             

@@ -40,7 +40,7 @@ export default function StaffDashboard() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 text-slate-500 uppercase text-sm tracking-wider">
+              <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 uppercase text-sm tracking-wider">
                 <th className="pb-4 pr-4">Invoice ID</th>
                 <th className="pb-4 px-4">Patient Name</th>
                 <th className="pb-4 px-4 text-right">Amount (NGN)</th>
@@ -59,20 +59,20 @@ export default function StaffDashboard() {
                 </tr>
               ) : (
                 invoices.map((inv) => (
-                  <tr key={inv.invoice_id} className="border-b border-slate-100 hover:bg-slate-100/50 transition-colors cursor-default">
+                  <tr key={inv.invoice_id} className="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors cursor-default">
                     <td className="py-4 pr-4 font-mono text-sm text-primary">{inv.invoice_id.split('-')[0]}...</td>
-                    <td className="py-4 px-4 font-medium text-slate-700">
+                    <td className="py-4 px-4 font-medium text-slate-700 dark:text-slate-200">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-slate-200/50 border border-slate-200 flex items-center justify-center flex-shrink-0">
-                          <User className="w-4 h-4 text-slate-500" />
+                        <div className="w-8 h-8 rounded-full bg-slate-200/50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700 flex items-center justify-center flex-shrink-0">
+                          <User className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                         </div>
                         {inv.patient_name}
                       </div>
                     </td>
-                    <td className="py-4 px-4 text-right text-text font-mono">
+                    <td className="py-4 px-4 text-right text-text dark:text-slate-200 font-mono">
                       {new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(inv.amount)}
                     </td>
-                    <td className="py-4 px-4 text-muted text-sm">
+                    <td className="py-4 px-4 text-muted dark:text-slate-400 text-sm">
                       {new Date(inv.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </td>
                     <td className="py-4 pl-4 flex justify-center">

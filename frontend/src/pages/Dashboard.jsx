@@ -84,21 +84,21 @@ export default function Dashboard() {
 
   return (
     <div className="container mx-auto px-4 py-12 flex justify-center items-center min-h-screen">
-      <div className="glass-panel w-full max-w-4xl p-8 md:p-10 relative z-10">
+      <div className="glass-panel w-full max-w-4xl p-8 md:p-10 relative z-10 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-2xl transition-all duration-500">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-text tracking-tight">Generate Invoice</h1>
-          <p className="text-muted mt-2">Cashier Billing Terminal</p>
+          <h1 className="text-3xl font-bold text-text dark:text-white tracking-tight">Generate Invoice</h1>
+          <p className="text-muted dark:text-slate-400 mt-2">Cashier Billing Terminal</p>
         </div>
 
         {!invoice ? (
           <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-              <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2 mb-4">
+            <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
+              <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2 mb-4">
                 <User className="w-5 h-5 text-primary" /> Patient Details
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-sm font-medium text-slate-600 mb-1.5">Full Name</label>
+                  <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1.5">Full Name</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <User className="h-5 w-5 text-slate-400" />
@@ -107,7 +107,7 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-600 mb-1.5">Phone Number</label>
+                  <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1.5">Phone Number</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <Phone className="h-5 w-5 text-slate-400" />
@@ -118,9 +118,9 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+            <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
               <div className="flex justify-between items-center mb-2">
-                <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+                <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                   <FileText className="w-5 h-5 text-primary" /> Billing Items
                 </h2>
                 <button type="button" onClick={handleAddItem} className="text-primary hover:bg-primary/10 px-3 py-1.5 rounded-lg text-sm flex items-center gap-1.5 font-medium transition-colors">
@@ -152,8 +152,8 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="bg-primary/5 border border-primary/20 rounded-xl p-5 flex justify-between items-center shadow-inner">
-              <span className="text-lg font-medium text-slate-700">Total Amount Due</span>
+            <div className="bg-primary/5 dark:bg-primary/10 border border-primary/20 rounded-xl p-5 flex justify-between items-center shadow-inner">
+              <span className="text-lg font-medium text-slate-700 dark:text-slate-300">Total Amount Due</span>
               <span className="text-2xl font-bold text-primary">{new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(totalAmount)}</span>
             </div>
 
@@ -176,47 +176,47 @@ export default function Dashboard() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-5 gap-8 items-start">
                 {/* Left Side: Payment Instructions */}
-                <div className="md:col-span-3 bg-white border border-slate-200 shadow-sm rounded-2xl p-8 text-center relative overflow-hidden">
+                <div className="md:col-span-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm rounded-2xl p-8 text-center relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-full h-2 bg-primary"></div>
-                  <h3 className="text-slate-500 text-sm font-semibold uppercase tracking-wider mb-2">Payment Required</h3>
-                  <p className="text-slate-800 text-xl font-medium mb-6">Transfer exactly <span className="font-bold text-primary">{new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(invoice.amount)}</span></p>
+                  <h3 className="text-slate-500 dark:text-slate-400 text-sm font-semibold uppercase tracking-wider mb-2">Payment Required</h3>
+                  <p className="text-slate-800 dark:text-slate-200 text-xl font-medium mb-6">Transfer exactly <span className="font-bold text-primary">{new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(invoice.amount)}</span></p>
                   
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 mb-6">
-                    <p className="text-slate-500 text-sm mb-1">Bank Name</p>
-                    <p className="text-lg font-semibold text-slate-900 mb-4">{invoice.bank_name}</p>
+                  <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-6 mb-6">
+                    <p className="text-slate-500 dark:text-slate-400 text-sm mb-1">Bank Name</p>
+                    <p className="text-lg font-semibold text-slate-900 dark:text-white mb-4">{invoice.bank_name}</p>
                     
-                    <p className="text-slate-500 text-sm mb-1">Account Number</p>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm mb-1">Account Number</p>
                     <div className="flex items-center justify-center gap-3">
                       <span className="text-4xl font-bold font-mono tracking-widest text-primary">{invoice.account_number}</span>
-                      <button onClick={copyToClipboard} className="p-2 bg-white border border-slate-200 hover:bg-slate-100 rounded-lg transition-colors text-slate-500 hover:text-slate-800 shadow-sm" title="Copy Account">
+                      <button onClick={copyToClipboard} className="p-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600 rounded-lg transition-colors text-slate-500 dark:text-slate-300 shadow-sm" title="Copy Account">
                         {copied ? <CheckCircle className="w-5 h-5 text-success" /> : <Copy className="w-5 h-5" />}
                       </button>
                     </div>
                   </div>
-                  <p className="text-slate-600 font-medium">Account Name: <span className="text-slate-900 font-bold">{invoice.account_name}</span></p>
+                  <p className="text-slate-600 dark:text-slate-400 font-medium">Account Name: <span className="text-slate-900 dark:text-white font-bold">{invoice.account_name}</span></p>
                 </div>
                 
                 {/* Right Side: Bill & Status */}
                 <div className="md:col-span-2 space-y-6">
-                  <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200 shadow-sm">
-                    <h4 className="flex items-center gap-2 font-semibold text-slate-800 mb-4 border-b border-slate-200 pb-3">
+                  <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <h4 className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-200 mb-4 border-b border-slate-200 dark:border-slate-800 pb-3">
                       <FileText className="w-5 h-5 text-primary" /> Invoice Summary
                     </h4>
                     <ul className="space-y-3">
                       {invoice.items.map((item, idx) => (
-                        <li key={idx} className="flex justify-between text-sm text-slate-600">
+                        <li key={idx} className="flex justify-between text-sm text-slate-600 dark:text-slate-400">
                           <span>{item.description}</span>
                           <span className="font-mono">{new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(item.amount)}</span>
                         </li>
                       ))}
-                      <li className="flex justify-between text-slate-900 font-bold border-t border-slate-200 pt-3 mt-3 text-lg">
+                      <li className="flex justify-between text-slate-900 dark:text-white font-bold border-t border-slate-200 dark:border-slate-800 pt-3 mt-3 text-lg">
                         <span>Total Due</span>
                         <span className="font-mono text-primary">{new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(invoice.amount)}</span>
                       </li>
                     </ul>
                   </div>
 
-                  <div className="bg-primary/5 border border-primary/20 rounded-2xl p-6 flex flex-col items-center justify-center gap-4 text-center">
+                  <div className="bg-primary/5 dark:bg-primary/10 border border-primary/20 dark:border-primary/30 rounded-2xl p-6 flex flex-col items-center justify-center gap-4 text-center">
                     <div className="relative">
                       <div className="absolute inset-0 bg-primary/20 rounded-full animate-ping"></div>
                       <Radar className="w-10 h-10 text-primary relative z-10 animate-spin-slow" />
