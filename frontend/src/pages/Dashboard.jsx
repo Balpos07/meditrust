@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, Trash2, Printer, CheckCircle, Loader2, Copy, Radar, User, Phone, FileText } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-
-export default function Dashboard() {
+import Receipt from '../components/Receipt';export default function Dashboard() {
   const [formData, setFormData] = useState({ full_name: '', phone_number: '' });
   const [items, setItems] = useState([{ description: 'Consultation Fee', amount: '5000' }]);
   const [loading, setLoading] = useState(false);
@@ -119,7 +118,8 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-12 flex justify-center items-center min-h-screen">
+    <>
+    <div className="container mx-auto px-4 py-12 flex justify-center items-center min-h-screen print:hidden">
       <div className="glass-panel w-full max-w-4xl p-8 md:p-10 relative z-10 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-2xl transition-all duration-500">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-text dark:text-white tracking-tight">Generate Invoice</h1>
@@ -206,8 +206,13 @@ export default function Dashboard() {
                   <CheckCircle className="w-12 h-12 text-success relative z-10" />
                 </div>
                 <h2 className="text-3xl font-bold text-success mb-2">Payment Cleared!</h2>
-                <p className="text-muted mb-8">Patient can proceed to pharmacy. Receipt sent via SMS.</p>
-                <button onClick={resetForm} className="btn-primary w-full py-4 text-lg">Create New Invoice</button>
+                <p className="text-muted mb-8">Patient can proceed to pharmacy.</p>
+                <div className="flex gap-4">
+                  <button onClick={() => window.print()} className="flex-1 py-4 text-lg flex items-center justify-center gap-2 border-2 border-primary text-primary hover:bg-primary/5 rounded-xl font-semibold transition-colors">
+                    <Printer className="w-6 h-6" /> Print Receipt
+                  </button>
+                  <button onClick={resetForm} className="btn-primary flex-1 py-4 text-lg">Create New Invoice</button>
+                </div>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-5 gap-8 items-start">
@@ -277,5 +282,7 @@ export default function Dashboard() {
         )}
       </div>
     </div>
+    {paid && <Receipt invoice={invoice} />}
+    </>
   );
 }
