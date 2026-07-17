@@ -9,7 +9,7 @@ import uuid
 from app.db.database import get_db
 from app.db.models import Staff, StaffRole
 from app.core.security import verify_password, get_password_hash, create_access_token
-from app.api.dependencies import get_current_user, get_db_session
+from app.api.dependencies import get_current_user, get_db_session, require_role
 
 router = APIRouter()
 
@@ -26,15 +26,20 @@ class StaffResponse(BaseModel):
     id: uuid.UUID
     username: str
     role: StaffRole
+    is_active: bool
     
     class Config:
         from_attributes = True
 
 @router.post("/register", response_model=StaffResponse)
-async def register_staff(user_in: StaffCreate, db: AsyncSession = Depends(get_db_session)) -> Any:
+async def register_staff(
+    user_in: StaffCreate, 
+    db: AsyncSession = Depends(get_db_session),
+    current_admin: Staff = Depends(require_role([StaffRole.ADMIN]))
+) -> Any:
     """
-    Temporarily open endpoint to create staff accounts. 
-    In production, this should be locked behind require_role([StaffRole.ADMIN]).
+    Endpoint to create staff accounts. 
+    Secured: Only ADMIN can access.
     """
     result = await db.execute(select(Staff).where(Staff.username == user_in.username))
     user = result.scalar_one_or_none()

@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Activity, CheckCircle, Clock, User, Download } from 'lucide-react';
+import { Activity, CheckCircle, Clock, User, Download, Search, Filter } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function StaffDashboard() {
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL');
   const { token } = useAuth();
 
   const fetchInvoices = async () => {
@@ -82,9 +84,16 @@ export default function StaffDashboard() {
     document.body.removeChild(link);
   };
 
+  const filteredInvoices = invoices.filter(inv => {
+    const matchesSearch = inv.patient_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          inv.invoice_id.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'ALL' || inv.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
   return (
     <div className="max-w-6xl mx-auto p-6 pt-24 relative z-10">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
             <Activity className="text-primary w-6 h-6" />
@@ -98,13 +107,44 @@ export default function StaffDashboard() {
         <button 
           onClick={handleExportCSV}
           disabled={invoices.length === 0}
-          className="flex items-center gap-2 bg-slate-800 dark:bg-slate-700 hover:bg-slate-700 dark:hover:bg-slate-600 text-white px-4 py-2.5 rounded-lg font-medium transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed border border-slate-700 dark:border-slate-600"
+          className="flex items-center gap-2 bg-slate-800 dark:bg-slate-700 hover:bg-slate-700 dark:hover:bg-slate-600 text-white px-4 py-2.5 rounded-lg font-medium transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed border border-slate-700 dark:border-slate-600 self-start md:self-auto"
         >
           <Download className="w-4 h-4" /> Export CSV
         </button>
       </div>
 
       <div className="glass-panel p-6">
+        
+        {/* Search and Filters */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <div className="relative flex-grow">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-slate-400" />
+            </div>
+            <input 
+              type="text" 
+              className="input-field pl-10" 
+              placeholder="Search by patient name or invoice ID..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="relative min-w-[200px]">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Filter className="h-5 w-5 text-slate-400" />
+            </div>
+            <select 
+              className="input-field pl-10 bg-white dark:bg-slate-800 appearance-none"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="ALL">All Statuses</option>
+              <option value="PAID">Paid</option>
+              <option value="PENDING">Awaiting Payment</option>
+            </select>
+          </div>
+        </div>
+
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -121,12 +161,12 @@ export default function StaffDashboard() {
                 <tr>
                   <td colSpan="5" className="text-center py-8 text-muted">Loading live feed...</td>
                 </tr>
-              ) : invoices.length === 0 ? (
+              ) : filteredInvoices.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="text-center py-8 text-muted">No recent invoices found.</td>
+                  <td colSpan="5" className="text-center py-8 text-muted">No invoices found matching your criteria.</td>
                 </tr>
               ) : (
-                invoices.map((inv) => (
+                filteredInvoices.map((inv) => (
                   <tr key={inv.invoice_id} className="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors cursor-default">
                     <td className="py-4 pr-4 font-mono text-sm text-primary">{inv.invoice_id.split('-')[0]}...</td>
                     <td className="py-4 px-4 font-medium text-slate-700 dark:text-slate-200">

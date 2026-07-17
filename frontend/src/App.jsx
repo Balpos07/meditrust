@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard';
 import Verify from './pages/Verify';
 import StaffDashboard from './pages/StaffDashboard';
 import Login from './pages/Login';
+import AdminSettings from './pages/AdminSettings';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Stethoscope, ShieldCheck, Activity, Menu, X, Sun, Moon, LogOut } from 'lucide-react';
 
@@ -50,6 +51,12 @@ function Navigation({ theme, toggleTheme }) {
              Security Scanner
           </Link>
           
+          {user?.role === 'ADMIN' && (
+            <Link to="/settings" className={`flex items-center gap-2 transition-colors font-medium ${isActive('/settings') ? 'text-slate-800 dark:text-slate-200' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}>
+               Settings
+            </Link>
+          )}
+
           <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-2"></div>
           
           {token && (
@@ -95,6 +102,11 @@ function Navigation({ theme, toggleTheme }) {
           <Link to="/verify" onClick={closeMenu} className={`flex items-center gap-3 p-3 rounded-lg transition-colors font-medium ${isActive('/verify') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
             <ShieldCheck className="w-5 h-5" /> Security Scanner
           </Link>
+          {user?.role === 'ADMIN' && (
+            <Link to="/settings" onClick={closeMenu} className={`flex items-center gap-3 p-3 rounded-lg transition-colors font-medium ${isActive('/settings') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+              <ShieldCheck className="w-5 h-5" /> Admin Settings
+            </Link>
+          )}
           {token && (
             <button onClick={() => { logout(); closeMenu(); }} className="flex items-center gap-3 p-3 rounded-lg transition-colors font-medium text-slate-600 dark:text-slate-300 hover:text-danger hover:bg-slate-50 dark:hover:bg-slate-800 w-full text-left">
               <LogOut className="w-5 h-5" /> Logout
@@ -138,6 +150,7 @@ function App() {
                 <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                 <Route path="/staff" element={<ProtectedRoute><StaffDashboard /></ProtectedRoute>} />
                 <Route path="/verify" element={<ProtectedRoute><Verify /></ProtectedRoute>} />
+                <Route path="/settings" element={<ProtectedRoute><AdminSettings /></ProtectedRoute>} />
               </Routes>
             </main>
           </div>
