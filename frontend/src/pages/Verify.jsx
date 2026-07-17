@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { ShieldCheck, ShieldAlert, Search, Loader2 } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, Search, Loader2, Camera, X } from 'lucide-react';
+import { Html5QrcodeScanner } from 'html5-qrcode';
 
 export default function Verify() {
   const [searchParams] = useSearchParams();
@@ -11,12 +12,52 @@ export default function Verify() {
   const [sig, setSig] = useState(initialSig);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
 
   useEffect(() => {
     if (initialInvoiceId && initialSig) {
       handleVerify(initialInvoiceId, initialSig);
     }
   }, [initialInvoiceId, initialSig]);
+
+  useEffect(() => {
+    let scanner = null;
+    if (isScanning) {
+      scanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 250, height: 250 } }, false);
+      scanner.render(
+        (decodedText) => {
+          // Expected format: http://localhost:5173/verify?invoice_id=XXX&sig=YYY
+          try {
+            scanner.clear();
+            setIsScanning(false);
+            const url = new URL(decodedText);
+            const invId = url.searchParams.get('invoice_id');
+            const signature = url.searchParams.get('sig');
+            if (invId && signature) {
+              setInvoiceId(invId);
+              setSig(signature);
+              handleVerify(invId, signature);
+            } else {
+              alert("Invalid QR Code format.");
+            }
+          } catch (e) {
+            scanner.clear();
+            setIsScanning(false);
+            alert("Invalid QR Code URL.");
+          }
+        },
+        (error) => {
+          // ignore scan failures
+        }
+      );
+    }
+
+    return () => {
+      if (scanner) {
+        scanner.clear().catch(e => console.error("Failed to clear scanner", e));
+      }
+    };
+  }, [isScanning]);
 
   const handleVerify = async (inv, signature) => {
     if (!inv || !signature) return;
@@ -38,31 +79,77 @@ export default function Verify() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-12 flex justify-center items-start min-h-screen pt-20">
-      <div className="glass-panel w-full max-w-md p-6 relative z-10">
+    <div className="container mx-auto px-4 py-12 flex justify-center items-start min-h-screen pt-24">
+      <div className="glass-panel w-full max-w-md p-8 relative z-10">
         
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-white flex items-center justify-center gap-2">
             <Search className="w-6 h-6 text-primary" />
             Security Verifier
           </h1>
-          <p className="text-muted text-sm mt-1">Validate Meditrust Receipts</p>
+          <p className="text-muted text-sm mt-1">Scan Receipt QR to clear patient</p>
         </div>
 
-        {!result && (
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1">Invoice ID</label>
-              <input type="text" required className="input-field py-2" value={invoiceId} onChange={e => setInvoiceId(e.target.value)} />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1">Cryptographic Signature</label>
-              <input type="text" required className="input-field py-2 font-mono text-xs" value={sig} onChange={e => setSig(e.target.value)} />
-            </div>
-            <button type="submit" disabled={loading} className="btn-primary mt-2 flex justify-center items-center h-10">
-              {loading ? <Loader2 className="animate-spin w-5 h-5" /> : "Verify Receipt"}
+        {!result && !isScanning && (
+          <div className="space-y-6">
+            <button 
+              onClick={() => setIsScanning(true)} 
+              className="w-full bg-primary/20 border border-primary/50 text-primary hover:bg-primary hover:text-white transition-colors py-4 rounded-xl flex items-center justify-center gap-3 font-semibold text-lg"
+            >
+              <Camera className="w-6 h-6" /> Scan QR Code
             </button>
-          </form>
+
+            <div className="relative flex items-center py-2">
+              <div className="flex-grow border-t border-white/10"></div>
+              <span className="flex-shrink-0 mx-4 text-muted text-sm uppercase">Or type manually</span>
+              <div className="flex-grow border-t border-white/10"></div>
+            </div>
+
+            <form onSubmit={onSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-slate-400 mb-1">Invoice ID</label>
+                <input type="text" required className="input-field py-2" value={invoiceId} onChange={e => setInvoiceId(e.target.value)} />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-400 mb-1">Cryptographic Signature</label>
+                <input type="text" required className="input-field py-2 font-mono text-xs" value={sig} onChange={e => setSig(e.target.value)} />
+              </div>
+              <button type="submit" disabled={loading} className="w-full bg-slate-800 hover:bg-slate-700 text-white transition-colors py-3 rounded-lg flex items-center justify-center font-medium mt-2">
+                {loading ? <Loader2 className="animate-spin w-5 h-5" /> : "Verify Receipt"}
+              </button>
+            </form>
+          </div>
+        )}
+
+        {isScanning && (
+          <div className="animate-in fade-in duration-300">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-white font-medium">Scanning...</h3>
+              <button onClick={() => setIsScanning(false)} className="text-muted hover:text-white bg-white/5 p-2 rounded-full">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div id="reader" className="rounded-xl overflow-hidden border border-white/10"></div>
+            <style>{`
+              #reader video {
+                border-radius: 0.75rem !important;
+                object-fit: cover !important;
+              }
+              #reader__dashboard_section_csr span {
+                color: #f8fafc !important;
+              }
+              #reader__dashboard_section_swaplink {
+                color: #3b82f6 !important;
+              }
+              #reader__camera_selection {
+                background: #1e293b !important;
+                color: white !important;
+                border: 1px solid rgba(255,255,255,0.1) !important;
+                padding: 0.5rem !important;
+                border-radius: 0.5rem !important;
+              }
+            `}</style>
+          </div>
         )}
 
         {result && (
@@ -97,7 +184,7 @@ export default function Verify() {
               </div>
             )}
             
-            <button onClick={() => setResult(null)} className="w-full mt-6 text-sm text-slate-400 hover:text-white transition-colors">
+            <button onClick={() => { setResult(null); setInvoiceId(''); setSig(''); }} className="w-full mt-6 text-sm text-slate-400 hover:text-white transition-colors">
               Verify another receipt
             </button>
           </div>

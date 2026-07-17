@@ -5,19 +5,28 @@ from sqlalchemy.future import select
 import uuid
 import hmac
 import hashlib
-from typing import Optional
+from typing import Optional, List
+from sqlalchemy.orm import selectinload
 
 from app.core.config import settings
 
-from app.db.models import User, Invoice, InvoiceStatus
+from app.db.models import User, Invoice, InvoiceStatus, InvoiceItem
 from app.api.dependencies import get_db_session
 from app.services.monnify import monnify_client
 
 router = APIRouter()
 
+class ItemRequest(BaseModel):
+    description: str
+    amount: float
+
 class InvoiceRequest(BaseModel):
     phone_number: str
     full_name: str
+    items: List[ItemRequest]
+
+class ItemResponse(BaseModel):
+    description: str
     amount: float
 
 class InvoiceResponse(BaseModel):
@@ -28,6 +37,7 @@ class InvoiceResponse(BaseModel):
     account_name: str
     amount: float
     status: str
+    items: List[ItemResponse]
 
 @router.post("/invoice", response_model=InvoiceResponse)
 async def create_invoice(request: InvoiceRequest, db: AsyncSession = Depends(get_db_session)):
@@ -39,23 +49,37 @@ async def create_invoice(request: InvoiceRequest, db: AsyncSession = Depends(get
         user = User(phone_number=request.phone_number, full_name=request.full_name)
         db.add(user)
         await db.flush()
+    # Calculate total amount
+    total_amount = sum(item.amount for item in request.items)
         
     # 2. Create Invoice
     payment_ref = f"INV-{uuid.uuid4().hex[:10].upper()}"
     invoice = Invoice(
         patient_id=user.id,
-        amount=request.amount,
+        amount=total_amount,
         payment_reference=payment_ref,
         status=InvoiceStatus.PENDING
     )
     db.add(invoice)
     await db.flush()
     
+    # 2.5 Add Items
+    invoice_items = []
+    for req_item in request.items:
+        db_item = InvoiceItem(
+            invoice_id=invoice.id,
+            description=req_item.description,
+            amount=req_item.amount
+        )
+        db.add(db_item)
+        invoice_items.append(db_item)
+    await db.flush()
+    
     # 3. Call Monnify
     try:
         monnify_resp = await monnify_client.create_dynamic_virtual_account(
             payment_reference=payment_ref,
-            amount=request.amount,
+            amount=total_amount,
             customer_name=user.full_name,
             customer_email=f"{user.phone_number}@meditrust.local"  # Dummy email as placeholder
         )
@@ -80,8 +104,37 @@ async def create_invoice(request: InvoiceRequest, db: AsyncSession = Depends(get
         bank_name=bank_name,
         account_name=account_name,
         amount=float(invoice.amount),
-        status=invoice.status.value
+        status=invoice.status.value,
+        items=[ItemResponse(description=i.description, amount=float(i.amount)) for i in invoice_items]
     )
+
+class InvoiceListResponse(BaseModel):
+    invoice_id: str
+    patient_name: str
+    amount: float
+    status: str
+    created_at: str
+
+@router.get("/invoices", response_model=List[InvoiceListResponse])
+async def get_all_invoices(db: AsyncSession = Depends(get_db_session)):
+    result = await db.execute(
+        select(Invoice)
+        .options(selectinload(Invoice.patient))
+        .order_by(Invoice.created_at.desc())
+        .limit(50)
+    )
+    invoices = result.scalars().all()
+    
+    return [
+        InvoiceListResponse(
+            invoice_id=str(inv.id),
+            patient_name=inv.patient.full_name,
+            amount=float(inv.amount),
+            status=inv.status.value,
+            created_at=inv.created_at.isoformat()
+        )
+        for inv in invoices
+    ]
 
 class InvoiceStatusResponse(BaseModel):
     status: str
