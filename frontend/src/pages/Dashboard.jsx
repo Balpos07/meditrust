@@ -15,7 +15,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (!invoice || paid) return;
     
-    const ws = new WebSocket('ws://localhost:8000/api/v1/ws/live-board');
+    const ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/api/v1/ws/live-board`);
     
     ws.onmessage = (event) => {
       try {
@@ -59,7 +59,7 @@ export default function Dashboard() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:8000/api/v1/billing/invoice', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/billing/invoice`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -101,7 +101,7 @@ export default function Dashboard() {
 
   const handleSimulatePayment = async () => {
     try {
-      await fetch('http://localhost:8000/api/v1/webhooks/monnify/simulate', {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/v1/webhooks/monnify/simulate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

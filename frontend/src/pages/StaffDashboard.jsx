@@ -9,7 +9,7 @@ export default function StaffDashboard() {
 
   const fetchInvoices = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/v1/billing/invoices', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/billing/invoices`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -26,7 +26,7 @@ export default function StaffDashboard() {
   useEffect(() => {
     fetchInvoices();
     
-    const ws = new WebSocket('ws://localhost:8000/api/v1/ws/live-board');
+    const ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/api/v1/ws/live-board`);
     
     ws.onmessage = (event) => {
       try {

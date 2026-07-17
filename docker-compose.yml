@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  backend:
+    build: 
+      context: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - DATABASE_URL=${DATABASE_URL}
+      - MONNIFY_API_KEY=${MONNIFY_API_KEY}
+      - MONNIFY_SECRET_KEY=${MONNIFY_SECRET_KEY}
+      - MONNIFY_CONTRACT_CODE=${MONNIFY_CONTRACT_CODE}
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # Since nginx proxies /api/ to backend:8000, the frontend can just use relative paths
+        - VITE_API_URL=
+        # Websockets will use relative wss path in production if configured right, or you can hardcode the domain here
+        - VITE_WS_URL=
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: always

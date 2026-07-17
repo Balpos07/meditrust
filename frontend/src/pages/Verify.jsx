@@ -65,7 +65,7 @@ export default function Verify() {
     if (!inv || !signature) return;
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:8000/api/v1/billing/verify?invoice_id=${inv}&sig=${signature}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/billing/verify?invoice_id=${inv}&sig=${signature}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
