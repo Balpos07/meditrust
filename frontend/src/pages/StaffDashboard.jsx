@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Activity, CheckCircle, Clock } from 'lucide-react';
+import { Activity, CheckCircle, Clock, User } from 'lucide-react';
 
 export default function StaffDashboard() {
   const [invoices, setInvoices] = useState([]);
@@ -59,9 +59,16 @@ export default function StaffDashboard() {
                 </tr>
               ) : (
                 invoices.map((inv) => (
-                  <tr key={inv.invoice_id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                  <tr key={inv.invoice_id} className="border-b border-slate-100 hover:bg-slate-100/50 transition-colors cursor-default">
                     <td className="py-4 pr-4 font-mono text-sm text-primary">{inv.invoice_id.split('-')[0]}...</td>
-                    <td className="py-4 px-4 font-medium text-text">{inv.patient_name}</td>
+                    <td className="py-4 px-4 font-medium text-slate-700">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-slate-200/50 border border-slate-200 flex items-center justify-center flex-shrink-0">
+                          <User className="w-4 h-4 text-slate-500" />
+                        </div>
+                        {inv.patient_name}
+                      </div>
+                    </td>
                     <td className="py-4 px-4 text-right text-text font-mono">
                       {new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(inv.amount)}
                     </td>

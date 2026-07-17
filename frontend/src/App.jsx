@@ -14,8 +14,8 @@ function Navigation() {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <nav className="relative z-50 bg-white shadow-sm">
-      <div className="w-full mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+    <nav className="sticky top-0 z-50 bg-white shadow-sm border-b border-slate-200">
+      <div className="w-full mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
         <div className="flex items-center gap-2 text-slate-800 font-bold text-2xl">
           <Stethoscope className="text-primary w-7 h-7" />
           <span>MediTrust</span>

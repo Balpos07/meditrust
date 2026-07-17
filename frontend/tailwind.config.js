@@ -6,11 +6,11 @@ export default {
   ],
   theme: {
     fontFamily: {
-      sans: ['Montserrat', 'sans-serif'],
+      sans: ['Fredoka', 'sans-serif'],
     },
     extend: {
       colors: {
-        background: '#f4f7f6',
+        background: '#f8fafc',
         card: '#ffffff',
         primary: '#0ea5e9',
         success: '#10b981',
