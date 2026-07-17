@@ -5,6 +5,11 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     DATABASE_URL: str
     
+    # Auth
+    SECRET_KEY: str = "supersecretkey_change_in_production_meditrust_2026"
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 10080 # 7 days
+    
     # Monnify
     MONNIFY_API_KEY: str
     MONNIFY_SECRET_KEY: str

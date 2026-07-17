@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ShieldCheck, ShieldAlert, Search, Loader2, Camera, X, Hash, Key } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import { Html5QrcodeScanner } from 'html5-qrcode';
 
 export default function Verify() {
@@ -13,6 +14,7 @@ export default function Verify() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
+  const { token } = useAuth();
 
   useEffect(() => {
     if (initialInvoiceId && initialSig) {
@@ -63,7 +65,11 @@ export default function Verify() {
     if (!inv || !signature) return;
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:8000/api/v1/billing/verify?invoice_id=${inv}&sig=${signature}`);
+      const res = await fetch(`http://localhost:8000/api/v1/billing/verify?invoice_id=${inv}&sig=${signature}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       const data = await res.json();
       setResult(data);
     } catch (err) {

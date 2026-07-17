@@ -1,7 +1,7 @@
 import uuid
 import enum
 from datetime import datetime, timezone
-from sqlalchemy import Column, String, Numeric, Enum, ForeignKey, DateTime, Uuid
+from sqlalchemy import Column, String, Numeric, Enum, ForeignKey, DateTime, Uuid, Boolean
 from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
@@ -10,6 +10,21 @@ class InvoiceStatus(str, enum.Enum):
     PENDING = "PENDING"
     PAID = "PAID"
     EXPIRED = "EXPIRED"
+
+class StaffRole(str, enum.Enum):
+    CASHIER = "CASHIER"
+    PHARMACY = "PHARMACY"
+    SECURITY = "SECURITY"
+    ADMIN = "ADMIN"
+
+class Staff(Base):
+    __tablename__ = "staff"
+    
+    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    username = Column(String, unique=True, index=True, nullable=False)
+    hashed_password = Column(String, nullable=False)
+    role = Column(Enum(StaffRole), default=StaffRole.CASHIER, nullable=False)
+    is_active = Column(Boolean, default=True, nullable=False)
 
 class User(Base):
     __tablename__ = "users"

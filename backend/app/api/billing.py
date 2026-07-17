@@ -10,8 +10,8 @@ from sqlalchemy.orm import selectinload
 
 from app.core.config import settings
 
-from app.db.models import User, Invoice, InvoiceStatus, InvoiceItem
-from app.api.dependencies import get_db_session
+from app.db.models import User, Invoice, InvoiceStatus, InvoiceItem, Staff, StaffRole
+from app.api.dependencies import get_db_session, require_role
 from app.services.monnify import monnify_client
 
 router = APIRouter()
@@ -40,7 +40,11 @@ class InvoiceResponse(BaseModel):
     items: List[ItemResponse]
 
 @router.post("/invoice", response_model=InvoiceResponse)
-async def create_invoice(request: InvoiceRequest, db: AsyncSession = Depends(get_db_session)):
+async def create_invoice(
+    request: InvoiceRequest, 
+    db: AsyncSession = Depends(get_db_session),
+    current_staff: Staff = Depends(require_role([StaffRole.CASHIER]))
+):
     # 1. Get or Create Patient
     result = await db.execute(select(User).where(User.phone_number == request.phone_number))
     user = result.scalars().first()
@@ -116,7 +120,10 @@ class InvoiceListResponse(BaseModel):
     created_at: str
 
 @router.get("/invoices", response_model=List[InvoiceListResponse])
-async def get_all_invoices(db: AsyncSession = Depends(get_db_session)):
+async def get_all_invoices(
+    db: AsyncSession = Depends(get_db_session),
+    current_staff: Staff = Depends(require_role([StaffRole.CASHIER, StaffRole.PHARMACY]))
+):
     result = await db.execute(
         select(Invoice)
         .options(selectinload(Invoice.patient))
@@ -140,7 +147,11 @@ class InvoiceStatusResponse(BaseModel):
     status: str
 
 @router.get("/invoice/{invoice_id}", response_model=InvoiceStatusResponse)
-async def get_invoice_status(invoice_id: str, db: AsyncSession = Depends(get_db_session)):
+async def get_invoice_status(
+    invoice_id: str, 
+    db: AsyncSession = Depends(get_db_session),
+    current_staff: Staff = Depends(require_role([StaffRole.CASHIER]))
+):
     try:
         uuid_obj = uuid.UUID(invoice_id)
     except ValueError:
@@ -161,7 +172,12 @@ class VerifyResponse(BaseModel):
     paid_at: Optional[str] = None
 
 @router.get("/verify", response_model=VerifyResponse)
-async def verify_receipt(invoice_id: str, sig: str, db: AsyncSession = Depends(get_db_session)):
+async def verify_receipt(
+    invoice_id: str, 
+    sig: str, 
+    db: AsyncSession = Depends(get_db_session),
+    current_staff: Staff = Depends(require_role([StaffRole.SECURITY]))
+):
     # Verify HMAC signature
     secret = settings.MONNIFY_SECRET_KEY.encode('utf-8')
     message = str(invoice_id).encode('utf-8')

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Copy, CheckCircle, Loader2, Plus, Trash2, Radar, User, Phone, FileText } from 'lucide-react';
+import { Plus, Trash2, Printer, CheckCircle, Loader2, Copy, Radar, User, Phone, FileText } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export default function Dashboard() {
   const [formData, setFormData] = useState({ full_name: '', phone_number: '' });
@@ -8,13 +9,16 @@ export default function Dashboard() {
   const [invoice, setInvoice] = useState(null);
   const [paid, setPaid] = useState(false);
   const [copied, setCopied] = useState(false);
+  const { token } = useAuth();
 
   // Poll for payment status
   useEffect(() => {
     if (!invoice || paid) return;
     const interval = setInterval(async () => {
       try {
-        const res = await fetch(`http://localhost:8000/api/v1/billing/invoice/${invoice.invoice_id}`);
+        const res = await fetch(`http://localhost:8000/api/v1/billing/invoice/${invoice.invoice_id}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
         const data = await res.json();
         if (data.status === 'PAID') setPaid(true);
       } catch (err) {
@@ -22,7 +26,7 @@ export default function Dashboard() {
       }
     }, 5000);
     return () => clearInterval(interval);
-  }, [invoice, paid]);
+  }, [invoice, paid, token]);
 
   const handleAddItem = () => {
     setItems([...items, { description: '', amount: '' }]);
@@ -47,7 +51,10 @@ export default function Dashboard() {
     try {
       const res = await fetch('http://localhost:8000/api/v1/billing/invoice', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           full_name: formData.full_name,
           phone_number: formData.phone_number,

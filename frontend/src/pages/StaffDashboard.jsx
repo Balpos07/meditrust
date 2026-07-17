@@ -1,13 +1,19 @@
 import { useState, useEffect } from 'react';
 import { Activity, CheckCircle, Clock, User } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export default function StaffDashboard() {
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { token } = useAuth();
 
   const fetchInvoices = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/v1/billing/invoices');
+      const response = await fetch('http://localhost:8000/api/v1/billing/invoices', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       const data = await response.json();
       setInvoices(data);
     } catch (error) {

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api import billing, webhooks
+from app.api import billing, webhooks, auth
 from app.db.database import engine
 from app.db.models import Base
 
@@ -30,6 +30,7 @@ async def startup_event():
 
 app.include_router(billing.router, prefix="/api/v1/billing", tags=["Billing"])
 app.include_router(webhooks.router, prefix="/api/v1/webhooks", tags=["Webhooks"])
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["Auth"])
 
 @app.get("/health")
 async def health_check():

@@ -1,13 +1,30 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import Verify from './pages/Verify';
 import StaffDashboard from './pages/StaffDashboard';
-import { Stethoscope, ShieldCheck, Activity, Menu, X, Sun, Moon } from 'lucide-react';
+import Login from './pages/Login';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { Stethoscope, ShieldCheck, Activity, Menu, X, Sun, Moon, LogOut } from 'lucide-react';
+
+const ProtectedRoute = ({ children }) => {
+  const { token, loading } = useAuth();
+  
+  if (loading) {
+    return <div className="min-h-[80vh] flex items-center justify-center text-slate-500">Loading...</div>;
+  }
+  
+  if (!token) {
+    return <Navigate to="/login" />;
+  }
+  
+  return children;
+};
 
 function Navigation({ theme, toggleTheme }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const { user, token, logout } = useAuth();
 
   const closeMenu = () => setIsMenuOpen(false);
 
@@ -35,6 +52,18 @@ function Navigation({ theme, toggleTheme }) {
           
           <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-2"></div>
           
+          {token && (
+            <>
+              <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                Hi, {user?.username}
+              </span>
+              <button onClick={logout} className="flex items-center gap-2 text-slate-500 hover:text-danger transition-colors font-medium text-sm">
+                <LogOut size={18} />
+              </button>
+              <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-2"></div>
+            </>
+          )}
+
           <button onClick={toggleTheme} className="p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors" title="Toggle Dark Mode">
             {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </button>
@@ -66,6 +95,11 @@ function Navigation({ theme, toggleTheme }) {
           <Link to="/verify" onClick={closeMenu} className={`flex items-center gap-3 p-3 rounded-lg transition-colors font-medium ${isActive('/verify') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
             <ShieldCheck className="w-5 h-5" /> Security Scanner
           </Link>
+          {token && (
+            <button onClick={() => { logout(); closeMenu(); }} className="flex items-center gap-3 p-3 rounded-lg transition-colors font-medium text-slate-600 dark:text-slate-300 hover:text-danger hover:bg-slate-50 dark:hover:bg-slate-800 w-full text-left">
+              <LogOut className="w-5 h-5" /> Logout
+            </button>
+          )}
         </div>
       )}
     </nav>
@@ -87,26 +121,29 @@ function App() {
   const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
 
   return (
-    <BrowserRouter>
-      <div className="min-h-screen bg-background dark:bg-slate-950 bg-dots-pattern relative flex flex-col overflow-hidden text-text dark:text-slate-200 transition-colors duration-500">
-        
-        {/* Premium Background Decorations (Dark Mode Only) */}
-        <div className="hidden dark:block absolute top-0 inset-x-0 h-[500px] bg-gradient-to-b from-primary/10 to-transparent pointer-events-none z-0"></div>
-        <div className="hidden dark:block absolute top-1/4 left-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl -translate-x-1/2 pointer-events-none z-0 animate-breathe"></div>
-        <div className="hidden dark:block absolute bottom-1/4 right-0 w-[40rem] h-[40rem] bg-success/10 rounded-full blur-3xl translate-x-1/4 pointer-events-none z-0 animate-float"></div>
+    <AuthProvider>
+      <BrowserRouter>
+        <div className="min-h-screen bg-background dark:bg-slate-950 bg-dots-pattern relative flex flex-col overflow-hidden text-text dark:text-slate-200 transition-colors duration-500">
+          
+          {/* Premium Background Decorations (Dark Mode Only) */}
+          <div className="hidden dark:block absolute top-0 inset-x-0 h-[500px] bg-gradient-to-b from-primary/10 to-transparent pointer-events-none z-0"></div>
+          <div className="hidden dark:block absolute top-1/4 left-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl -translate-x-1/2 pointer-events-none z-0 animate-breathe"></div>
+          <div className="hidden dark:block absolute bottom-1/4 right-0 w-[40rem] h-[40rem] bg-success/10 rounded-full blur-3xl translate-x-1/4 pointer-events-none z-0 animate-float"></div>
 
-        <div className="w-full mx-auto flex flex-col flex-grow relative z-10">
-          <Navigation theme={theme} toggleTheme={toggleTheme} />
-          <main className="flex-grow relative">
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/staff" element={<StaffDashboard />} />
-              <Route path="/verify" element={<Verify />} />
-            </Routes>
-          </main>
+          <div className="w-full mx-auto flex flex-col flex-grow relative z-10">
+            <Navigation theme={theme} toggleTheme={toggleTheme} />
+            <main className="flex-grow relative">
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                <Route path="/staff" element={<ProtectedRoute><StaffDashboard /></ProtectedRoute>} />
+                <Route path="/verify" element={<ProtectedRoute><Verify /></ProtectedRoute>} />
+              </Routes>
+            </main>
+          </div>
         </div>
-      </div>
-    </BrowserRouter>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 
