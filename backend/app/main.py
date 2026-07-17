@@ -18,10 +18,8 @@ from sqlalchemy import text
 
 @app.on_event("startup")
 async def startup_event():
-    # Only for simple dev initialization - normally use Alembic
-    async with engine.begin() as conn:
-        # await conn.run_sync(Base.metadata.drop_all)
-        await conn.run_sync(Base.metadata.create_all)
+    # Database is now managed by Alembic migrations
+    pass
         # Attempt to add the column in case it's an old database
         try:
             await conn.execute(text("ALTER TABLE invoices ADD COLUMN dynamic_bank_name VARCHAR"))

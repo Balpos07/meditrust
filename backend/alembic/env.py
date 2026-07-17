@@ -13,10 +13,16 @@ if config.config_file_name is not None:
 
 target_metadata = Base.metadata
 
+db_url = settings.DATABASE_URL
+if db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql+asyncpg://", 1)
+elif db_url.startswith("postgresql://"):
+    db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+db_url = db_url.replace("sslmode=", "ssl=")
+
 def run_migrations_offline() -> None:
-    url = settings.DATABASE_URL
     context.configure(
-        url=url,
+        url=db_url,
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
@@ -32,7 +38,7 @@ def do_run_migrations(connection: Connection) -> None:
 
 async def run_migrations_online() -> None:
     alembic_config = config.get_section(config.config_ini_section)
-    alembic_config["sqlalchemy.url"] = settings.DATABASE_URL
+    alembic_config["sqlalchemy.url"] = db_url
     
     connectable = async_engine_from_config(
         alembic_config,
