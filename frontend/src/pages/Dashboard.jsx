@@ -103,7 +103,7 @@ export default function Dashboard() {
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <User className="h-5 w-5 text-slate-400" />
                     </div>
-                    <input type="text" required className="input-field pl-10" value={formData.full_name} onChange={e => setFormData({...formData, full_name: e.target.value})} placeholder="John Doe" />
+                    <input type="text" required className="input-field pl-12" value={formData.full_name} onChange={e => setFormData({...formData, full_name: e.target.value})} placeholder="John Doe" />
                   </div>
                 </div>
                 <div>
@@ -112,7 +112,7 @@ export default function Dashboard() {
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <Phone className="h-5 w-5 text-slate-400" />
                     </div>
-                    <input type="tel" required className="input-field pl-10" value={formData.phone_number} onChange={e => setFormData({...formData, phone_number: e.target.value})} placeholder="080 1234 5678" />
+                    <input type="tel" required className="input-field pl-12" value={formData.phone_number} onChange={e => setFormData({...formData, phone_number: e.target.value})} placeholder="080 1234 5678" />
                   </div>
                 </div>
               </div>
@@ -139,7 +139,7 @@ export default function Dashboard() {
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                           <span className="text-slate-400 font-medium">₦</span>
                         </div>
-                        <input type="number" required min="0" step="0.01" className="input-field pl-8" value={item.amount} onChange={e => handleItemChange(idx, 'amount', e.target.value)} placeholder="0.00" />
+                        <input type="number" required min="0" step="0.01" className="input-field pl-10" value={item.amount} onChange={e => handleItemChange(idx, 'amount', e.target.value)} placeholder="0.00" />
                       </div>
                     </div>
                     {items.length > 1 && (

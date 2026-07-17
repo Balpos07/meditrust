@@ -15,9 +15,6 @@ export default {
         text: '#1e293b',
         muted: '#64748b'
       },
-      fontFamily: {
-        sans: ['Fredoka', 'sans-serif'],
-      },
       animation: {
         'spin-slow': 'spin 3s linear infinite',
       }
