@@ -5,6 +5,7 @@ import Verify from './pages/Verify';
 import StaffDashboard from './pages/StaffDashboard';
 import Login from './pages/Login';
 import AdminSettings from './pages/AdminSettings';
+import PatientInvoice from './pages/PatientInvoice';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Stethoscope, ShieldCheck, Activity, Menu, X, Sun, Moon, LogOut } from 'lucide-react';
 
@@ -147,6 +148,7 @@ function App() {
             <main className="flex-grow relative">
               <Routes>
                 <Route path="/login" element={<Login />} />
+                <Route path="/pay/:reference" element={<PatientInvoice />} />
                 <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                 <Route path="/staff" element={<ProtectedRoute><StaffDashboard /></ProtectedRoute>} />
                 <Route path="/verify" element={<ProtectedRoute><Verify /></ProtectedRoute>} />

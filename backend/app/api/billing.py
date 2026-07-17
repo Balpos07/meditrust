@@ -14,6 +14,7 @@ from app.db.models import User, Invoice, InvoiceStatus, InvoiceItem, Staff, Staf
 from app.api.dependencies import get_db_session, require_role
 from app.services.monnify import monnify_client
 from app.core.websockets import manager
+from app.services.notifications import send_invoice_notification
 import json
 
 router = APIRouter()
@@ -109,6 +110,18 @@ async def create_invoice(
         "invoice_id": str(invoice.id)
     }))
     
+    # 6. Trigger SMS / WhatsApp Notification
+    # Using background task for SMS delivery
+    import asyncio
+    asyncio.create_task(
+        send_invoice_notification(
+            to_phone=user.phone_number,
+            patient_name=user.full_name,
+            amount=float(invoice.amount),
+            payment_reference=invoice.payment_reference
+        )
+    )
+    
     return InvoiceResponse(
         invoice_id=str(invoice.id),
         payment_reference=invoice.payment_reference,
@@ -171,6 +184,8 @@ async def get_invoice_status(
         raise HTTPException(status_code=404, detail="Invoice not found")
         
     return InvoiceStatusResponse(status=invoice.status.value)
+
+
 
 class VerifyResponse(BaseModel):
     is_valid: bool

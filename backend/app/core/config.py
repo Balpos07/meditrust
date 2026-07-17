@@ -23,7 +23,12 @@ class Settings(BaseSettings):
     
     # App Settings
     APP_NAME: str = "Meditrust Backend"
-    VERIFICATION_URL_BASE: str = "https://meditrust.com/verify"
+    FRONTEND_URL: str = "http://localhost:5173" # Update in production (e.g. https://meditrust-frontend.onrender.com)
+    
+    # Twilio (SMS/WhatsApp)
+    TWILIO_ACCOUNT_SID: Optional[str] = None
+    TWILIO_AUTH_TOKEN: Optional[str] = None
+    TWILIO_PHONE_NUMBER: Optional[str] = None
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
