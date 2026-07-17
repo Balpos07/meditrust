@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-do
 import Dashboard from './pages/Dashboard';
 import Verify from './pages/Verify';
 import StaffDashboard from './pages/StaffDashboard';
-import { Stethoscope, ShieldCheck, Activity, Menu, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 
 function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -17,20 +17,20 @@ function Navigation() {
     <nav className="sticky top-0 z-50 bg-white shadow-sm border-b border-slate-200">
       <div className="w-full mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
         <div className="flex items-center gap-2 text-slate-800 font-bold text-2xl">
-          <Stethoscope className="text-primary w-7 h-7" />
+          {/* <Stethoscope className="text-primary w-7 h-7" /> */}
           <span>MediTrust</span>
         </div>
         
         {/* Desktop Menu */}
         <div className="hidden md:flex gap-8">
           <Link to="/" className={`flex items-center gap-2 transition-colors font-medium ${isActive('/') ? 'text-primary' : 'text-slate-500 hover:text-slate-800'}`}>
-            <Activity className="w-5 h-5" /> Cashier
+             Cashier
           </Link>
           <Link to="/staff" className={`flex items-center gap-2 transition-colors font-medium ${isActive('/staff') ? 'text-success' : 'text-slate-500 hover:text-slate-800'}`}>
-            <Activity className="w-5 h-5" /> Live Board
+            Live Board
           </Link>
           <Link to="/verify" className={`flex items-center gap-2 transition-colors font-medium ${isActive('/verify') ? 'text-slate-800' : 'text-slate-500 hover:text-slate-800'}`}>
-            <ShieldCheck className="w-5 h-5" /> Security Scanner
+             Security Scanner
           </Link>
         </div>
 
