@@ -20,11 +20,6 @@ from sqlalchemy import text
 async def startup_event():
     # Database is now managed by Alembic migrations
     pass
-        # Attempt to add the column in case it's an old database
-        try:
-            await conn.execute(text("ALTER TABLE invoices ADD COLUMN dynamic_bank_name VARCHAR"))
-        except Exception:
-            pass
 
 app.include_router(billing.router, prefix="/api/v1/billing", tags=["Billing"])
 app.include_router(webhooks.router, prefix="/api/v1/webhooks", tags=["Webhooks"])
