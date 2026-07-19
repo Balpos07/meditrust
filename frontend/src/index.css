@@ -16,6 +16,9 @@
     background-image: radial-gradient(#334155 1px, transparent 1px);
     background-size: 24px 24px;
   }
+}
+
+@layer components {
   .glass-panel {
     @apply bg-card dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm rounded-2xl transition-colors duration-300;
   }

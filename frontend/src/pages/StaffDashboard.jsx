@@ -146,7 +146,7 @@ export default function StaffDashboard() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse whitespace-nowrap min-w-[700px]">
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 uppercase text-sm tracking-wider">
                 <th className="pb-4 pr-4">Invoice ID</th>

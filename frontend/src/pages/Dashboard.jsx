@@ -166,23 +166,23 @@ import Receipt from '../components/Receipt';export default function Dashboard() 
               
               <div className="space-y-3">
                 {items.map((item, idx) => (
-                  <div key={idx} className="flex gap-3 items-start group">
-                    <div className="flex-grow">
+                  <div key={idx} className="flex flex-col sm:flex-row gap-3 items-start group">
+                    <div className="flex-grow w-full">
                       <input type="text" required className="input-field" value={item.description} onChange={e => handleItemChange(idx, 'description', e.target.value)} placeholder="Description (e.g. Blood Test)" />
                     </div>
-                    <div className="w-1/3">
-                      <div className="relative">
+                    <div className="w-full sm:w-1/3 flex gap-3">
+                      <div className="relative flex-grow">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                           <span className="text-slate-400 font-medium">₦</span>
                         </div>
                         <input type="number" required min="0" step="0.01" className="input-field pl-10" value={item.amount} onChange={e => handleItemChange(idx, 'amount', e.target.value)} placeholder="0.00" />
                       </div>
+                      {items.length > 1 && (
+                        <button type="button" onClick={() => handleRemoveItem(idx)} className="p-3 text-slate-400 hover:text-danger hover:bg-danger/10 rounded-lg transition-colors flex-shrink-0">
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      )}
                     </div>
-                    {items.length > 1 && (
-                      <button type="button" onClick={() => handleRemoveItem(idx)} className="p-3 text-slate-400 hover:text-danger hover:bg-danger/10 rounded-lg transition-colors mt-0.5">
-                        <Trash2 className="w-5 h-5" />
-                      </button>
-                    )}
                   </div>
                 ))}
               </div>
