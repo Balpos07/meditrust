@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, Printer, CheckCircle, Loader2, Copy, Radar, User, Phone, FileText } from 'lucide-react';
+import { Plus, Trash2, Printer, CheckCircle, Loader2, Copy, Radar, User, Phone, FileText, Send } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import Receipt from '../components/Receipt';export default function Dashboard() {
   const [formData, setFormData] = useState({ full_name: '', phone_number: '' });
@@ -267,12 +267,13 @@ import Receipt from '../components/Receipt';export default function Dashboard() 
                       <p className="text-xs text-primary/80 mt-1">Listening for bank transfer...</p>
                     </div>
                     
-                    {/* DEV ONLY BUTTON */}
+                    {/* TEST ENVIRONMENT PAYMENT BUTTON */}
                     <button 
                       onClick={handleSimulatePayment}
-                      className="mt-4 text-xs font-medium bg-primary/20 text-primary hover:bg-primary/30 px-3 py-1.5 rounded-full transition-colors border border-primary/30"
+                      className="mt-6 w-full max-w-[220px] mx-auto flex items-center justify-center gap-2 text-sm font-medium bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-primary dark:hover:text-primary hover:border-primary/50 px-4 py-2.5 rounded-xl transition-all border border-slate-200 dark:border-slate-700 shadow-sm"
+                      title="Instantly mock a successful bank transfer in sandbox mode"
                     >
-                      🧪 Simulate Payment (Dev)
+                      <Send className="w-4 h-4 text-primary/70" /> Confirm Mock Transfer
                     </button>
                   </div>
                 </div>

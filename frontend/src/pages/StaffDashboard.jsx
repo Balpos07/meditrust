@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Activity, CheckCircle, Clock, User, Download, Search, Filter } from 'lucide-react';
+import { Activity, CheckCircle, Clock, User, Download, Search, Filter, History, Copy } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function StaffDashboard() {
@@ -7,11 +7,12 @@ export default function StaffDashboard() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [showHistory, setShowHistory] = useState(false);
   const { token } = useAuth();
 
-  const fetchInvoices = async () => {
+  const fetchInvoices = async (historyMode = false) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/billing/invoices`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/billing/invoices?history=${historyMode}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -38,7 +39,7 @@ export default function StaffDashboard() {
             inv.invoice_id === data.invoice_id ? { ...inv, status: 'PAID' } : inv
           ));
         } else if (data.type === 'NEW_INVOICE') {
-          fetchInvoices(); // Refresh the list to grab the newly created invoice
+          fetchInvoices(false); // Refresh the list to grab the newly created invoice
         }
       } catch (err) {
         console.error("Failed to parse websocket message", err);
@@ -143,6 +144,18 @@ export default function StaffDashboard() {
               <option value="PENDING">Awaiting Payment</option>
             </select>
           </div>
+          <button 
+            onClick={() => {
+              const newMode = !showHistory;
+              setShowHistory(newMode);
+              setLoading(true);
+              fetchInvoices(newMode);
+            }}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-colors border whitespace-nowrap ${showHistory ? 'bg-primary text-white border-primary shadow-md' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-sm'}`}
+          >
+            <History className="w-5 h-5" />
+            {showHistory ? "Viewing History" : "Past 24 Hours"}
+          </button>
         </div>
 
         <div className="overflow-x-auto">
@@ -168,7 +181,21 @@ export default function StaffDashboard() {
               ) : (
                 filteredInvoices.map((inv) => (
                   <tr key={inv.invoice_id} className="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors cursor-default">
-                    <td className="py-4 pr-4 font-mono text-sm text-primary">{inv.invoice_id.split('-')[0]}...</td>
+                    <td className="py-4 pr-4">
+                      <div className="flex items-center gap-2 group/copy">
+                        <span className="font-mono text-sm text-primary" title={inv.invoice_id}>{inv.invoice_id.split('-')[0]}...</span>
+                        <button 
+                          onClick={() => {
+                            navigator.clipboard.writeText(inv.invoice_id);
+                            // Optional: could add a quick toast notification here
+                          }} 
+                          className="text-slate-400 opacity-0 group-hover/copy:opacity-100 hover:text-primary transition-all p-1 rounded-md hover:bg-primary/10"
+                          title="Copy full Invoice ID"
+                        >
+                          <Copy className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </td>
                     <td className="py-4 px-4 font-medium text-slate-700 dark:text-slate-200">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-slate-200/50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700 flex items-center justify-center flex-shrink-0">

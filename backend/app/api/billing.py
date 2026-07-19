@@ -40,6 +40,7 @@ class InvoiceResponse(BaseModel):
     account_name: str
     amount: float
     status: str
+    signature: Optional[str] = None
     items: List[ItemResponse]
 
 @router.post("/invoice", response_model=InvoiceResponse)
@@ -122,6 +123,11 @@ async def create_invoice(
         )
     )
     
+    # 6.5 Calculate Signature for Frontend Receipt
+    secret = settings.MONNIFY_SECRET_KEY.encode('utf-8')
+    message = str(invoice.id).encode('utf-8')
+    signature = hmac.new(secret, message, hashlib.sha512).hexdigest()
+
     return InvoiceResponse(
         invoice_id=str(invoice.id),
         payment_reference=invoice.payment_reference,
@@ -130,8 +136,11 @@ async def create_invoice(
         account_name=account_name,
         amount=float(invoice.amount),
         status=invoice.status.value,
+        signature=signature,
         items=[ItemResponse(description=i.description, amount=float(i.amount)) for i in invoice_items]
     )
+
+from datetime import datetime, timedelta
 
 class InvoiceListResponse(BaseModel):
     invoice_id: str
@@ -142,15 +151,19 @@ class InvoiceListResponse(BaseModel):
 
 @router.get("/invoices", response_model=List[InvoiceListResponse])
 async def get_all_invoices(
+    history: bool = False,
     db: AsyncSession = Depends(get_db_session),
     current_staff: Staff = Depends(require_role([StaffRole.CASHIER, StaffRole.PHARMACY]))
 ):
-    result = await db.execute(
-        select(Invoice)
-        .options(selectinload(Invoice.patient))
-        .order_by(Invoice.created_at.desc())
-        .limit(50)
-    )
+    query = select(Invoice).options(selectinload(Invoice.patient))
+    
+    if not history:
+        twenty_four_hours_ago = datetime.utcnow() - timedelta(hours=24)
+        query = query.where(Invoice.created_at >= twenty_four_hours_ago)
+        
+    query = query.order_by(Invoice.created_at.desc()).limit(100 if history else 50)
+    
+    result = await db.execute(query)
     invoices = result.scalars().all()
     
     return [
