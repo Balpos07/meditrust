@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Bell, Loader2, Info, CheckCircle, AlertTriangle, XCircle, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import api from '../../lib/axios';
 import { useNotifications } from '../../context/NotificationsContext';
+import { useSocket } from '../../context/SocketContext';
 import toast from 'react-hot-toast';
 
 const FILTERS = [
@@ -26,6 +27,7 @@ export default function NotificationList() {
   const [page, setPage] = useState(1);
   const [meta, setMeta] = useState({ totalPages: 1, total: 0 });
   const notificationsCtx = useNotifications();
+  const { socket } = useSocket();
 
   const fetchNotifications = useCallback(async () => {
     setLoading(true);
@@ -49,6 +51,20 @@ export default function NotificationList() {
   useEffect(() => {
     fetchNotifications();
   }, [fetchNotifications]);
+
+  // Live-update the list when a new notification arrives while this page is open,
+  // instead of only reflecting new alerts after a manual refresh.
+  useEffect(() => {
+    if (!socket) return;
+    const handleNotificationCreated = () => {
+      fetchNotifications();
+      notificationsCtx?.refreshUnreadCount();
+    };
+    socket.on('notification.created', handleNotificationCreated);
+    return () => {
+      socket.off('notification.created', handleNotificationCreated);
+    };
+  }, [socket, fetchNotifications, notificationsCtx]);
 
   const markAsRead = async (id) => {
     try {

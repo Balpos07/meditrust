@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Plus, Trash2, Loader2, FileText, User } from 'lucide-react';
+import { Plus, Trash2, Loader2, FileText, User, Search } from 'lucide-react';
 import api from '../../lib/axios';
 import toast from 'react-hot-toast';
 
@@ -11,6 +11,13 @@ export default function CreateInvoice() {
 
   const [patientId, setPatientId] = useState(patientIdParam || '');
   const [patientDetails, setPatientDetails] = useState(null);
+
+  // Patient search dropdown state
+  const [patientQuery, setPatientQuery] = useState('');
+  const [patientResults, setPatientResults] = useState([]);
+  const [searchingPatients, setSearchingPatients] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+  const searchWrapperRef = useRef(null);
   
   const [items, setItems] = useState([
     { description: 'General Consultation', quantity: 1, unitPrice: 5000 }
@@ -25,6 +32,54 @@ export default function CreateInvoice() {
         .catch(err => toast.error('Could not load patient details'));
     }
   }, [patientIdParam]);
+
+  // Debounced patient search-as-you-type
+  useEffect(() => {
+    if (!patientQuery || patientQuery.trim().length < 2) {
+      setPatientResults([]);
+      return;
+    }
+    const delayDebounceFn = setTimeout(async () => {
+      setSearchingPatients(true);
+      try {
+        const response = await api.get(`/patients?limit=8&search=${encodeURIComponent(patientQuery)}`);
+        setPatientResults(response.data.data || []);
+        setShowResults(true);
+      } catch (error) {
+        console.error('Patient search failed', error);
+      } finally {
+        setSearchingPatients(false);
+      }
+    }, 350);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [patientQuery]);
+
+  // Close the dropdown when clicking outside of it
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchWrapperRef.current && !searchWrapperRef.current.contains(event.target)) {
+        setShowResults(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleSelectPatient = (patient) => {
+    setPatientId(patient._id || patient.id);
+    setPatientDetails(patient);
+    setPatientQuery('');
+    setPatientResults([]);
+    setShowResults(false);
+  };
+
+  const handleChangePatient = () => {
+    setPatientId('');
+    setPatientDetails(null);
+    setPatientQuery('');
+    setPatientResults([]);
+  };
 
   const handleAddItem = () => {
     setItems([...items, { description: '', quantity: 1, unitPrice: 0 }]);
@@ -92,14 +147,57 @@ export default function CreateInvoice() {
                 <p className="font-bold text-slate-900 dark:text-white truncate">{patientDetails.firstName} {patientDetails.lastName}</p>
                 <p className="text-sm text-slate-500 truncate">{patientDetails.patientNumber} • {patientDetails.phone}</p>
               </div>
-              <button type="button" onClick={() => { setPatientId(''); setPatientDetails(null); }} className="text-sm text-primary hover:underline shrink-0">
+              <button type="button" onClick={handleChangePatient} className="text-sm text-primary hover:underline shrink-0">
                 Change
               </button>
             </div>
           ) : (
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Patient Mongo ID (In real app, use a searchable dropdown)</label>
-              <input type="text" required value={patientId} onChange={e => setPatientId(e.target.value)} className="input-field" placeholder="60d5ecb..." />
+            <div className="relative" ref={searchWrapperRef}>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Search Patient</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search className="h-5 w-5 text-slate-400" />
+                </div>
+                <input
+                  type="text"
+                  value={patientQuery}
+                  onChange={e => setPatientQuery(e.target.value)}
+                  onFocus={() => patientResults.length > 0 && setShowResults(true)}
+                  className="input-field pl-10"
+                  placeholder="Search by name, phone, or patient number..."
+                  autoComplete="off"
+                />
+                {searchingPatients && (
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                    <Loader2 className="w-4 h-4 text-slate-400 animate-spin" />
+                  </div>
+                )}
+              </div>
+
+              {showResults && (
+                <div className="absolute z-20 mt-2 w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg max-h-64 overflow-y-auto">
+                  {patientResults.length === 0 ? (
+                    <div className="p-4 text-sm text-slate-500 text-center">
+                      {searchingPatients ? 'Searching...' : 'No patients found. Try a different search.'}
+                    </div>
+                  ) : (
+                    patientResults.map(patient => (
+                      <button
+                        type="button"
+                        key={patient._id || patient.id}
+                        onClick={() => handleSelectPatient(patient)}
+                        className="w-full text-left px-4 py-3 hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors border-b border-slate-100 dark:border-slate-700 last:border-0 flex justify-between items-center gap-3"
+                      >
+                        <div className="min-w-0">
+                          <p className="font-medium text-slate-900 dark:text-white truncate">{patient.firstName} {patient.lastName}</p>
+                          <p className="text-xs text-slate-500 truncate">{patient.patientNumber} • {patient.phone}</p>
+                        </div>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+              <p className="text-xs text-slate-400 mt-2">Start typing at least 2 characters to search registered patients.</p>
             </div>
           )}
         </div>

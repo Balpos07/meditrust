@@ -27,6 +27,27 @@ export const NotificationsProvider = ({ children }) => {
     refreshUnreadCount();
   }, [refreshUnreadCount]);
 
+  // Socket gives near-instant updates, but socket connections aren't always reliable
+  // (proxies, cold starts, dropped connections). Poll as a fallback so the badge never
+  // gets permanently stuck out of sync, and also refresh whenever the tab regains focus.
+  useEffect(() => {
+    if (!token) return;
+
+    const interval = setInterval(refreshUnreadCount, 30000);
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        refreshUnreadCount();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, [token, refreshUnreadCount]);
+
   useEffect(() => {
     if (!socket) return;
 
