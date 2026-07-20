@@ -85,7 +85,7 @@ export default function ReceiptList() {
                        <span className="text-success bg-success/10 px-2 py-1 rounded-full text-xs font-bold border border-success/20">ISSUED</span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <Link to={`/receipts/${receipt.receiptNumber || receipt._id || receipt.id}`} className="text-primary hover:text-primary/80 font-medium text-sm">
+                      <Link to={`/receipts/${receipt._id || receipt.id}`} className="text-primary hover:text-primary/80 font-medium text-sm">
                         View
                       </Link>
                     </td>

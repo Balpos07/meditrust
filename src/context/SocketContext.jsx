@@ -37,12 +37,12 @@ export const SocketProvider = ({ children }) => {
 
     const newSocket = io(eventsUrl, {
       auth: { token },
-      transports: ['websocket', 'polling'], // Fallback to polling if WebSocket fails
+      // Start with polling — Vercel can proxy HTTP but not WebSocket upgrades.
+      // Socket.IO will try to upgrade to WebSocket after the initial handshake.
+      transports: ['polling', 'websocket'],
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
-      secure: true,
-      rejectUnauthorized: false,
     });
 
     newSocket.on('connect', () => {
