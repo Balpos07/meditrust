@@ -72,7 +72,10 @@ export default function Verify() {
         // by the backend which ignores missing tokens on public routes,
         // but we can also just use standard axios config if needed.
       });
-      setResult({ isValid: true, data: res.data.data });
+      // The API response is wrapped as { success, data: { status, message, receiptDetails } }
+      // by the global TransformResponseInterceptor — the actual receipt fields live under
+      // `data.receiptDetails`, not directly on `data`.
+      setResult({ isValid: true, data: res.data.data.receiptDetails });
     } catch (err) {
       setResult({ isValid: false, message: err.response?.data?.message || 'Verification failed' });
     } finally {
@@ -163,7 +166,7 @@ export default function Verify() {
                   <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
                     <span className="text-slate-500 dark:text-slate-400 text-sm">Amount Paid</span>
                     <span className="text-slate-900 dark:text-white font-bold font-mono text-lg">
-                      {new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(result.data.amount)}
+                      {new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(result.data.amountPaid)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
