@@ -32,7 +32,7 @@ export default function Login() {
           <div className="w-16 h-16 bg-primary/10 dark:bg-primary/20 rounded-2xl flex items-center justify-center mb-4 text-primary">
             <ShieldCheck size={32} />
           </div>
-          <h1 className="text-2xl font-bold text-text dark:text-white">Portal</h1>
+          <h1 className="text-2xl font-bold text-text dark:text-white">Staff Portal</h1>
           <p className="text-muted dark:text-slate-400 mt-1">Sign in to access Meditrust</p>
         </div>
 
