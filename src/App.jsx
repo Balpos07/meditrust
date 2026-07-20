@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+// Force re-deployment update for routing and navigation
 import { BrowserRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
