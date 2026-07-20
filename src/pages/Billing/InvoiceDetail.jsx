@@ -37,7 +37,13 @@ export default function InvoiceDetail() {
   }, [invoiceId]);
 
   useEffect(() => {
-    if (!socket || !invoice) return;
+    // Join and attach listeners as soon as the socket is available — do NOT wait for
+    // the invoice to finish loading first. Virtual account generation kicks off on the
+    // backend the moment the invoice is created (often completing within a second or
+    // two), so gating this on `invoice` delayed attachment long enough that the
+    // 'virtual_account.created' broadcast would already have been sent and missed,
+    // leaving the UI stuck on "Generating Accounts..." until a manual page refresh.
+    if (!socket || !invoiceId) return;
 
     // Join the specific invoice room
     socket.emit('join_room', `invoice:${invoiceId}`, (response) => {
@@ -50,7 +56,7 @@ export default function InvoiceDetail() {
       if (String(incomingId) === String(invoiceId)) {
         // Handle case where virtualAccount is nested or is the root object
         const vaData = data.virtualAccount ? data.virtualAccount : data;
-        setInvoice(prev => ({ ...prev, virtualAccount: vaData }));
+        setInvoice(prev => (prev ? { ...prev, virtualAccount: vaData } : prev));
         toast.success('Payment accounts generated!');
       }
     };
@@ -59,7 +65,7 @@ export default function InvoiceDetail() {
       console.log('Socket event payment.completed:', data);
       const incomingId = data.invoiceId || data.id || data._id;
       if (String(incomingId) === String(invoiceId)) {
-        setInvoice(prev => ({ ...prev, status: 'PAID' }));
+        setInvoice(prev => (prev ? { ...prev, status: 'PAID' } : prev));
         toast.success('Payment received successfully!', { duration: 5000, icon: '🎉' });
       }
     };
@@ -71,7 +77,8 @@ export default function InvoiceDetail() {
       socket.off('virtual_account.created', handleVirtualAccountCreated);
       socket.off('payment.completed', handlePaymentCompleted);
     };
-  }, [socket, invoiceId, invoice]);
+  }, [socket, invoiceId]);
+
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
