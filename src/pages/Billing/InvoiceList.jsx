@@ -75,7 +75,9 @@ export default function InvoiceList() {
                       {invoice.invoiceNumber}
                     </td>
                     <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">
-                      {invoice.patientId ? "Linked Patient" : "Unknown"} {/* In a real app, backend returns patient details embedded or we show ID */}
+                      {invoice.patientId && typeof invoice.patientId === 'object'
+                        ? `${invoice.patientId.firstName || ''} ${invoice.patientId.lastName || ''}`.trim() || 'Unknown'
+                        : 'Unknown'}
                     </td>
                     <td className="px-6 py-4 font-mono font-medium text-slate-600 dark:text-slate-300">
                       {new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(invoice.grandTotal)}
