@@ -17,6 +17,7 @@ export default function CreateInvoice() {
   const [patientResults, setPatientResults] = useState([]);
   const [searchingPatients, setSearchingPatients] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [patientsLoaded, setPatientsLoaded] = useState(false);
   const searchWrapperRef = useRef(null);
   
   const [items, setItems] = useState([
@@ -33,26 +34,32 @@ export default function CreateInvoice() {
     }
   }, [patientIdParam]);
 
-  // Debounced patient search-as-you-type
-  useEffect(() => {
-    if (!patientQuery || patientQuery.trim().length < 2) {
-      setPatientResults([]);
-      return;
+  // Loads the patient list from the backend. With an empty query, this browses ALL
+  // (most recent first) patients so staff can scroll and pick without needing to type
+  // anything; with a query, it filters by name/phone/patient number.
+  const loadPatients = async (query) => {
+    setSearchingPatients(true);
+    try {
+      const params = new URLSearchParams({ limit: '50' });
+      if (query) params.set('search', query);
+      const response = await api.get(`/patients?${params.toString()}`);
+      setPatientResults(response.data.data || []);
+      setPatientsLoaded(true);
+    } catch (error) {
+      console.error('Patient search failed', error);
+    } finally {
+      setSearchingPatients(false);
     }
-    const delayDebounceFn = setTimeout(async () => {
-      setSearchingPatients(true);
-      try {
-        const response = await api.get(`/patients?limit=8&search=${encodeURIComponent(patientQuery)}`);
-        setPatientResults(response.data.data || []);
-        setShowResults(true);
-      } catch (error) {
-        console.error('Patient search failed', error);
-      } finally {
-        setSearchingPatients(false);
-      }
-    }, 350);
+  };
+
+  // Debounce search-as-you-type; an empty query re-loads the full browsable list.
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      loadPatients(patientQuery.trim());
+    }, patientQuery ? 300 : 0);
 
     return () => clearTimeout(delayDebounceFn);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [patientQuery]);
 
   // Close the dropdown when clicking outside of it
@@ -70,7 +77,6 @@ export default function CreateInvoice() {
     setPatientId(patient._id || patient.id);
     setPatientDetails(patient);
     setPatientQuery('');
-    setPatientResults([]);
     setShowResults(false);
   };
 
@@ -78,7 +84,7 @@ export default function CreateInvoice() {
     setPatientId('');
     setPatientDetails(null);
     setPatientQuery('');
-    setPatientResults([]);
+    setShowResults(false);
   };
 
   const handleAddItem = () => {
@@ -153,7 +159,7 @@ export default function CreateInvoice() {
             </div>
           ) : (
             <div className="relative" ref={searchWrapperRef}>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Search Patient</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Select Patient</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Search className="h-5 w-5 text-slate-400" />
@@ -162,9 +168,12 @@ export default function CreateInvoice() {
                   type="text"
                   value={patientQuery}
                   onChange={e => setPatientQuery(e.target.value)}
-                  onFocus={() => patientResults.length > 0 && setShowResults(true)}
+                  onFocus={() => {
+                    setShowResults(true);
+                    if (!patientsLoaded) loadPatients('');
+                  }}
                   className="input-field pl-10"
-                  placeholder="Search by name, phone, or patient number..."
+                  placeholder="Click to browse all patients, or type to search..."
                   autoComplete="off"
                 />
                 {searchingPatients && (
@@ -175,29 +184,34 @@ export default function CreateInvoice() {
               </div>
 
               {showResults && (
-                <div className="absolute z-20 mt-2 w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg max-h-64 overflow-y-auto">
+                <div className="absolute z-20 mt-2 w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg max-h-80 overflow-y-auto">
                   {patientResults.length === 0 ? (
                     <div className="p-4 text-sm text-slate-500 text-center">
-                      {searchingPatients ? 'Searching...' : 'No patients found. Try a different search.'}
+                      {searchingPatients ? 'Loading patients...' : 'No patients found. Try a different search.'}
                     </div>
                   ) : (
-                    patientResults.map(patient => (
-                      <button
-                        type="button"
-                        key={patient._id || patient.id}
-                        onClick={() => handleSelectPatient(patient)}
-                        className="w-full text-left px-4 py-3 hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors border-b border-slate-100 dark:border-slate-700 last:border-0 flex justify-between items-center gap-3"
-                      >
-                        <div className="min-w-0">
-                          <p className="font-medium text-slate-900 dark:text-white truncate">{patient.firstName} {patient.lastName}</p>
-                          <p className="text-xs text-slate-500 truncate">{patient.patientNumber} • {patient.phone}</p>
-                        </div>
-                      </button>
-                    ))
+                    <>
+                      <div className="px-4 py-2 text-xs font-medium text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 sticky top-0">
+                        {patientQuery ? `${patientResults.length} match${patientResults.length === 1 ? '' : 'es'}` : `All Patients (${patientResults.length})`}
+                      </div>
+                      {patientResults.map(patient => (
+                        <button
+                          type="button"
+                          key={patient._id || patient.id}
+                          onClick={() => handleSelectPatient(patient)}
+                          className="w-full text-left px-4 py-3 hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors border-b border-slate-100 dark:border-slate-700 last:border-0 flex justify-between items-center gap-3"
+                        >
+                          <div className="min-w-0">
+                            <p className="font-medium text-slate-900 dark:text-white truncate">{patient.firstName} {patient.lastName}</p>
+                            <p className="text-xs text-slate-500 truncate">{patient.patientNumber} • {patient.phone}</p>
+                          </div>
+                        </button>
+                      ))}
+                    </>
                   )}
                 </div>
               )}
-              <p className="text-xs text-slate-400 mt-2">Start typing at least 2 characters to search registered patients.</p>
+              <p className="text-xs text-slate-400 mt-2">Click the field to browse all patients, or type to search by name, phone, or patient number.</p>
             </div>
           )}
         </div>
