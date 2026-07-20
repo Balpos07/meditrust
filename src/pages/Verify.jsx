@@ -75,7 +75,7 @@ export default function Verify() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-12 flex justify-center items-start min-h-screen pt-12 md:pt-24 bg-slate-50 dark:bg-slate-950">
+    <div className="w-[95%] lg:w-[80%] mx-auto  max-w-nonepx-4 py-12 flex justify-center items-start min-h-screen pt-12 md:pt-24 bg-slate-50 dark:bg-slate-950">
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-lg p-8 md:p-10 relative z-10 shadow-lg transition-all duration-500">
         
         <div className="text-center mb-8">

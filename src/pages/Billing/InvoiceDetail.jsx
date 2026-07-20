@@ -15,6 +15,7 @@ export default function InvoiceDetail() {
   const fetchInvoice = async () => {
     try {
       const response = await api.get(`/billing/invoices/${invoiceId}`);
+      console.log('Fetched Invoice from backend:', response.data.data);
       setInvoice(response.data.data);
     } catch (error) {
       toast.error('Failed to load invoice');
@@ -31,18 +32,25 @@ export default function InvoiceDetail() {
     if (!socket || !invoice) return;
 
     // Join the specific invoice room
-    socket.emit('join_room', `invoice:${invoiceId}`);
+    socket.emit('join_room', `invoice:${invoiceId}`, (response) => {
+      console.log('Joined invoice room:', response);
+    });
 
     const handleVirtualAccountCreated = (data) => {
-      if (data.invoiceId === invoiceId) {
-        // Update the invoice with the new virtual account data
-        setInvoice(prev => ({ ...prev, virtualAccount: data.virtualAccount }));
+      console.log('Socket event virtual_account.created:', data);
+      const incomingId = data.invoiceId || data.id || data._id;
+      if (String(incomingId) === String(invoiceId)) {
+        // Handle case where virtualAccount is nested or is the root object
+        const vaData = data.virtualAccount ? data.virtualAccount : data;
+        setInvoice(prev => ({ ...prev, virtualAccount: vaData }));
         toast.success('Payment accounts generated!');
       }
     };
 
     const handlePaymentCompleted = (data) => {
-      if (data.invoiceId === invoiceId) {
+      console.log('Socket event payment.completed:', data);
+      const incomingId = data.invoiceId || data.id || data._id;
+      if (String(incomingId) === String(invoiceId)) {
         setInvoice(prev => ({ ...prev, status: 'PAID' }));
         toast.success('Payment received successfully!', { duration: 5000, icon: '🎉' });
       }
@@ -75,7 +83,7 @@ export default function InvoiceDetail() {
   if (!invoice) return <div className="text-center py-12">Invoice not found</div>;
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-5xl">
+    <div className="w-[95%] lg:w-[80%] mx-auto px-4 py-8 max-w-none">
       <Link to="/billing" className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 mb-6 transition-colors">
         <ArrowLeft className="w-4 h-4" /> Back to Invoices
       </Link>

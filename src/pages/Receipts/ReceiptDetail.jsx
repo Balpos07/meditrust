@@ -50,7 +50,7 @@ export default function ReceiptDetail() {
   if (!receipt) return <div className="text-center py-12">Receipt not found</div>;
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-5xl">
+    <div className="w-[95%] lg:w-[80%] mx-auto px-4 py-8 max-w-none">
       <Link to="/receipts" className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 mb-6 transition-colors">
         <ArrowLeft className="w-4 h-4" /> Back to Receipts
       </Link>

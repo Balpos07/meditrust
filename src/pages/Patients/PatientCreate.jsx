@@ -37,7 +37,7 @@ export default function PatientCreate() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="w-[95%] lg:w-[80%] mx-auto px-4 py-8 max-w-none">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Register Patient</h1>
         <p className="text-slate-500 dark:text-slate-400 mt-1">Create a new patient record in the system.</p>
@@ -119,15 +119,14 @@ export default function PatientCreate() {
           </div>
 
 
-
         </div>
 
-        <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-4">
-          <button type="button" onClick={() => navigate('/patients')} className="px-6 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+        <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-4 items-center">
+          <button type="button" onClick={() => navigate('/patients')} className="px-6 h-14 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
             Cancel
           </button>
-          <button type="submit" disabled={loading} className="btn-primary px-8 flex items-center gap-2">
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Save Patient'}
+          <button type="submit" disabled={loading} className="btn-primary w-full sm:w-auto px-10 flex justify-center items-center h-14 text-lg font-semibold shadow-lg shadow-primary/30">
+            {loading ? <Loader2 className="animate-spin w-6 h-6" /> : "Register Patient"}
           </button>
         </div>
       </form>

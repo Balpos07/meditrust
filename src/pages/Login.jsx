@@ -26,7 +26,7 @@ export default function Login() {
   };
 
   return (
-    <div className="container mx-auto px-4 flex justify-center items-center min-h-[80vh]">
+    <div className="w-[95%] lg:w-[80%] mx-auto  max-w-nonepx-4 flex justify-center items-center min-h-[80vh]">
       <div className="glass-panel w-full max-w-md p-8 relative z-10 hover:shadow-lg dark:hover:shadow-2xl transition-all duration-500">
         <div className="flex flex-col items-center mb-8">
           <div className="w-16 h-16 bg-primary/10 dark:bg-primary/20 rounded-2xl flex items-center justify-center mb-4 text-primary">

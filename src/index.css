@@ -26,6 +26,6 @@
     @apply w-full bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-3 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-4 focus:ring-primary/10 dark:focus:ring-primary/20 focus:border-primary transition-all shadow-inner;
   }
   .btn-primary {
-    @apply w-full bg-primary hover:bg-sky-600 text-white font-medium rounded-lg px-4 py-3 transition-colors shadow-sm;
+    @apply bg-primary hover:bg-sky-600 text-white font-medium rounded-lg px-4 py-3 transition-colors shadow-sm;
   }
 }

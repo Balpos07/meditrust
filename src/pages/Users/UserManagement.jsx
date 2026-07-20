@@ -3,7 +3,7 @@ import { Users, Shield, Loader2 } from 'lucide-react';
 
 export default function UserManagement() {
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <div className="w-[95%] lg:w-[80%] mx-auto px-4 py-8 max-w-none">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
           <Users className="w-8 h-8 text-primary" /> User Management

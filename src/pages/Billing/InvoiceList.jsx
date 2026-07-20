@@ -28,7 +28,7 @@ export default function InvoiceList() {
   }, [page]);
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <div className="w-[95%] lg:w-[80%] mx-auto px-4 py-8 max-w-none">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Billing & Invoices</h1>

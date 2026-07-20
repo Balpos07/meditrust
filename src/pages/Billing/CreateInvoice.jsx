@@ -13,7 +13,7 @@ export default function CreateInvoice() {
   const [patientDetails, setPatientDetails] = useState(null);
   
   const [items, setItems] = useState([
-    { description: 'General Consultation', quantity: 1, unitPrice: 5000, serviceCode: 'CONSULT-01', department: 'OPD' }
+    { description: 'General Consultation', quantity: 1, unitPrice: 5000 }
   ]);
   const [loading, setLoading] = useState(false);
 
@@ -27,7 +27,7 @@ export default function CreateInvoice() {
   }, [patientIdParam]);
 
   const handleAddItem = () => {
-    setItems([...items, { description: '', quantity: 1, unitPrice: 0, serviceCode: '', department: 'GENERAL' }]);
+    setItems([...items, { description: '', quantity: 1, unitPrice: 0 }]);
   };
 
   const handleRemoveItem = (index) => {
@@ -53,11 +53,15 @@ export default function CreateInvoice() {
       return;
     }
     setLoading(true);
+    const payload = {
+      patientId,
+      items
+    };
     try {
-      const response = await api.post('/billing/invoices', {
-        patientId,
-        items
-      });
+      const response = await api.post('/billing/invoices', payload);
+      console.log('--- INVOICE CREATION RESPONSE ---');
+      console.log(JSON.stringify(response.data, null, 2));
+      console.log('---------------------------------');
       toast.success('Invoice created successfully!');
       // Navigate to the invoice detail page where virtual account info will appear
       const invoiceId = response.data.data?._id || response.data.data?.id || response.data?._id || response.data?.id;
@@ -70,7 +74,7 @@ export default function CreateInvoice() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="w-[95%] lg:w-[80%] mx-auto px-4 py-8 max-w-none">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Create Invoice</h1>
         <p className="text-slate-500 dark:text-slate-400 mt-1">Generate a new bill for a patient.</p>
@@ -116,10 +120,6 @@ export default function CreateInvoice() {
               <div key={idx} className="flex flex-col md:flex-row gap-4 items-start bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
                 <div className="flex-grow w-full space-y-3">
                   <input type="text" required value={item.description} onChange={e => handleItemChange(idx, 'description', e.target.value)} className="input-field" placeholder="Description (e.g. Blood Test)" />
-                  <div className="flex gap-3">
-                    <input type="text" value={item.serviceCode} onChange={e => handleItemChange(idx, 'serviceCode', e.target.value)} className="input-field w-1/2" placeholder="Code (e.g. LAB-01)" />
-                    <input type="text" value={item.department} onChange={e => handleItemChange(idx, 'department', e.target.value)} className="input-field w-1/2" placeholder="Dept (e.g. LAB)" />
-                  </div>
                 </div>
                 <div className="w-full md:w-1/3 flex gap-3">
                   <input type="number" required min="1" value={item.quantity} onChange={e => handleItemChange(idx, 'quantity', e.target.value)} className="input-field w-20" placeholder="Qty" />
@@ -145,9 +145,11 @@ export default function CreateInvoice() {
           <span className="text-2xl font-bold text-primary">{new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(totalAmount)}</span>
         </div>
 
-        <button type="submit" disabled={loading} className="btn-primary w-full flex justify-center items-center h-14 text-lg font-semibold shadow-lg shadow-primary/30">
-          {loading ? <Loader2 className="animate-spin w-6 h-6" /> : "Generate Invoice"}
-        </button>
+        <div className="flex justify-end">
+          <button type="submit" disabled={loading} className="btn-primary w-full sm:w-auto px-10 flex justify-center items-center h-14 text-lg font-semibold shadow-lg shadow-primary/30">
+            {loading ? <Loader2 className="animate-spin w-6 h-6" /> : "Generate Invoice"}
+          </button>
+        </div>
       </form>
     </div>
   );

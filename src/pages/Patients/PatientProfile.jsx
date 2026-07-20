@@ -14,14 +14,21 @@ export default function PatientProfile() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [patientRes, invoicesRes] = await Promise.all([
-          api.get(`/patients/${id}`),
-          api.get(`/billing/invoices?patientId=${id}&limit=50`)
-        ]);
-        setPatient(patientRes.data.data);
-        setInvoices(invoicesRes.data.data);
+        const patientRes = await api.get(`/patients/${id}`);
+        setPatient(patientRes.data.data || patientRes.data);
+        
+        try {
+          const invoicesRes = await api.get(`/billing/invoices?patientId=${id}&limit=50`);
+          setInvoices(invoicesRes.data.data || invoicesRes.data || []);
+        } catch (invoiceErr) {
+          // If fetching invoices fails (e.g. 404 Not Found because there are no invoices),
+          // we gracefully fallback to an empty array instead of crashing the profile.
+          console.warn('Could not load invoices or patient has no invoices:', invoiceErr);
+          setInvoices([]);
+        }
+        
       } catch (error) {
-        console.error('Failed to load profile', error);
+        console.error('Failed to load patient profile', error);
       } finally {
         setLoading(false);
       }
@@ -47,7 +54,7 @@ export default function PatientProfile() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <div className="w-[95%] lg:w-[80%] mx-auto px-4 py-8 max-w-none">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-3">

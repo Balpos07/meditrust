@@ -93,7 +93,7 @@ export default function StaffDashboard() {
   });
 
   return (
-    <div className="max-w-6xl mx-auto p-6 pt-24 relative z-10">
+    <div className="w-[95%] lg:w-[80%] max-w-none mx-auto p-6 pt-24 relative z-10">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">

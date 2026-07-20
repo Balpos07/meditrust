@@ -11,8 +11,8 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
-      '/events': {
-        target: 'wss://miditrust.onrender.com',
+      '/socket.io': {
+        target: 'https://miditrust.onrender.com',
         changeOrigin: true,
         ws: true,
         secure: false,
