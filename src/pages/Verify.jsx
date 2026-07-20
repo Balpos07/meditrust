@@ -1,26 +1,23 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { ShieldCheck, ShieldAlert, Search, Loader2, Camera, X, Hash, Key } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { ShieldCheck, ShieldAlert, Loader2, Camera, X } from 'lucide-react';
 import { Html5QrcodeScanner } from 'html5-qrcode';
+import api from '../lib/axios';
 
 export default function Verify() {
   const [searchParams] = useSearchParams();
-  const initialInvoiceId = searchParams.get('invoice_id') || '';
-  const initialSig = searchParams.get('sig') || '';
+  const tokenParam = searchParams.get('token');
 
-  const [invoiceId, setInvoiceId] = useState(initialInvoiceId);
-  const [sig, setSig] = useState(initialSig);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
-  const { token } = useAuth();
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (initialInvoiceId && initialSig) {
-      handleVerify(initialInvoiceId, initialSig);
+    if (tokenParam) {
+      handleVerify(tokenParam);
     }
-  }, [initialInvoiceId, initialSig]);
+  }, [tokenParam]);
 
   useEffect(() => {
     let scanner = null;
@@ -28,27 +25,24 @@ export default function Verify() {
       scanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 250, height: 250 } }, false);
       scanner.render(
         (decodedText) => {
-          // Expected format: http://localhost:5173/verify?invoice_id=XXX&sig=YYY
+          // Expected format: https://domain.com/verify?token=XXX
           try {
             scanner.clear();
             setIsScanning(false);
             const url = new URL(decodedText);
-            const invId = url.searchParams.get('invoice_id');
-            const signature = url.searchParams.get('sig');
-            if (invId && signature) {
-              setInvoiceId(invId);
-              setSig(signature);
-              handleVerify(invId, signature);
+            const token = url.searchParams.get('token');
+            if (token) {
+              handleVerify(token);
             } else {
-              alert("Invalid QR Code format.");
+              setError("Invalid QR Code: Missing token parameter.");
             }
           } catch (e) {
             scanner.clear();
             setIsScanning(false);
-            alert("Invalid QR Code URL.");
+            setError("Invalid QR Code format.");
           }
         },
-        (error) => {
+        (err) => {
           // ignore scan failures
         }
       );
@@ -61,102 +55,79 @@ export default function Verify() {
     };
   }, [isScanning]);
 
-  const handleVerify = async (inv, signature) => {
-    if (!inv || !signature) return;
+  const handleVerify = async (token) => {
+    if (!token) return;
     setLoading(true);
+    setError(null);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/billing/verify?invoice_id=${inv}&sig=${signature}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+      // Endpoint is NO AUTH REQUIRED
+      const res = await api.post('/verification/verify', { token }, {
+        // Overriding the interceptor by not passing authorization header is handled 
+        // by the backend which ignores missing tokens on public routes,
+        // but we can also just use standard axios config if needed.
       });
-      const data = await res.json();
-      setResult(data);
+      setResult({ isValid: true, data: res.data.data });
     } catch (err) {
-      setResult({ is_valid: false });
+      setResult({ isValid: false, message: err.response?.data?.message || 'Verification failed' });
     } finally {
       setLoading(false);
     }
   };
 
-  const onSubmit = (e) => {
-    e.preventDefault();
-    handleVerify(invoiceId, sig);
-  };
-
   return (
-    <div className="container mx-auto px-4 py-12 flex justify-center items-start min-h-screen pt-12 md:pt-24">
-      <div className="glass-panel w-full max-w-lg p-8 md:p-10 relative z-10 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-2xl transition-all duration-500">
+    <div className="container mx-auto px-4 py-12 flex justify-center items-start min-h-screen pt-12 md:pt-24 bg-slate-50 dark:bg-slate-950">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-lg p-8 md:p-10 relative z-10 shadow-lg transition-all duration-500">
         
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-text dark:text-white flex items-center justify-center gap-2">
-            <Search className="w-6 h-6 text-primary" />
-            Security Verifier
+          <div className="w-16 h-16 bg-primary/10 dark:bg-primary/20 rounded-2xl flex items-center justify-center mx-auto mb-4 text-primary">
+            <ShieldCheck size={32} />
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+            Receipt Verification
           </h1>
-          <p className="text-muted dark:text-slate-400 text-sm mt-1">Scan Receipt QR to clear patient</p>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-2">
+            Automated cryptographic clearance checker
+          </p>
         </div>
 
-        {!result && !isScanning && (
-          <div className="space-y-8">
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-12 space-y-4">
+            <Loader2 className="w-10 h-10 text-primary animate-spin" />
+            <p className="text-slate-500 font-medium tracking-wide animate-pulse">Verifying cryptographic signature...</p>
+          </div>
+        ) : !result && !isScanning ? (
+          <div className="space-y-6">
+            {error && (
+              <div className="bg-danger/10 border border-danger/20 text-danger p-4 rounded-xl text-center text-sm font-medium">
+                {error}
+              </div>
+            )}
             <button 
               onClick={() => setIsScanning(true)} 
-              className="w-full bg-white dark:bg-slate-900 border-2 border-primary/20 dark:border-primary/50 text-primary hover:bg-primary hover:text-white transition-colors py-4 rounded-xl flex items-center justify-center gap-3 font-semibold text-lg shadow-sm"
+              className="w-full bg-slate-50 dark:bg-slate-800 border-2 border-dashed border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-primary hover:text-primary transition-colors py-8 rounded-2xl flex flex-col items-center justify-center gap-3 font-semibold shadow-sm"
             >
-              <Camera className="w-6 h-6" /> Scan QR Code
+              <Camera className="w-10 h-10 text-slate-400 mb-2 group-hover:text-primary transition-colors" /> 
+              Tap to Scan Physical Receipt
             </button>
-
-            <div className="relative flex items-center py-2">
-              <div className="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
-              <span className="flex-shrink-0 mx-4 text-muted dark:text-slate-500 text-sm uppercase">Or type manually</span>
-              <div className="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
-            </div>
-
-            <form onSubmit={onSubmit} className="space-y-5">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Invoice ID</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Hash className="h-5 w-5 text-slate-400" />
-                  </div>
-                  <input type="text" required className="input-field pl-11 py-3" value={invoiceId} onChange={e => setInvoiceId(e.target.value)} placeholder="e.g. inv-xyz..." />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Cryptographic Signature</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Key className="h-5 w-5 text-slate-400" />
-                  </div>
-                  <input type="text" required className="input-field pl-11 py-3 font-mono text-sm" value={sig} onChange={e => setSig(e.target.value)} placeholder="e.g. 0xabc123..." />
-                </div>
-              </div>
-              <button type="submit" disabled={loading} className="btn-primary w-full flex items-center justify-center h-12 text-base font-semibold mt-4">
-                {loading ? <Loader2 className="animate-spin w-5 h-5" /> : "Verify Receipt"}
-              </button>
-            </form>
+            <p className="text-center text-xs text-slate-400">
+              Patients can also scan the QR code using their mobile phone camera to verify themselves.
+            </p>
           </div>
-        )}
-
-        {isScanning && (
+        ) : isScanning ? (
           <div className="animate-in fade-in duration-300">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-text font-medium">Scanning...</h3>
-              <button onClick={() => setIsScanning(false)} className="text-muted hover:text-text bg-slate-100 hover:bg-slate-200 transition-colors p-2 rounded-full">
+              <h3 className="font-medium text-slate-800 dark:text-slate-200">Scanning...</h3>
+              <button onClick={() => setIsScanning(false)} className="text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors p-2 rounded-full">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div id="reader" className="rounded-xl overflow-hidden border border-slate-200"></div>
+            <div id="reader" className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-black"></div>
             <style>{`
               #reader video {
                 border-radius: 0.75rem !important;
                 object-fit: cover !important;
               }
-              #reader__dashboard_section_csr span {
-                color: #1e293b !important;
-              }
-              #reader__dashboard_section_swaplink {
-                color: #0ea5e9 !important;
-              }
+              #reader__dashboard_section_csr span { color: #1e293b !important; }
               #reader__camera_selection {
                 background: white !important;
                 color: #1e293b !important;
@@ -166,42 +137,54 @@ export default function Verify() {
               }
             `}</style>
           </div>
-        )}
-
-        {result && (
+        ) : (
           <div className="animate-in slide-in-from-bottom-4 duration-300">
-            {result.is_valid ? (
-              <div className="bg-success/10 border border-success/30 dark:border-success/50 rounded-xl p-6 text-center">
-                <ShieldCheck className="w-16 h-16 text-success mx-auto mb-4" />
-                <h2 className="text-2xl font-bold text-success mb-1 tracking-wide">VERIFIED</h2>
-                <p className="text-success/80 text-sm font-medium mb-6">Cryptographic Signature Valid</p>
+            {result.isValid ? (
+              <div className="bg-success/5 border border-success/20 rounded-2xl p-6 text-center">
+                <ShieldCheck className="w-20 h-20 text-success mx-auto mb-4 drop-shadow-md" />
+                <h2 className="text-3xl font-bold text-success mb-1 tracking-wide">CLEARED</h2>
+                <p className="text-success/80 text-sm font-bold tracking-widest uppercase mb-6">Authentic Receipt</p>
                 
-                <div className="space-y-4 text-left bg-white dark:bg-slate-900 border border-success/20 dark:border-success/40 p-5 rounded-xl shadow-sm mt-6">
+                <div className="space-y-4 text-left bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-5 rounded-xl shadow-sm mt-6">
                   <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
-                    <span className="text-slate-500 dark:text-slate-400 text-sm">Patient Name</span>
-                    <span className="text-slate-800 dark:text-slate-200 font-semibold">{result.patient_name}</span>
+                    <span className="text-slate-500 dark:text-slate-400 text-sm">Receipt Number</span>
+                    <span className="text-slate-800 dark:text-slate-200 font-mono font-bold">{result.data.receiptNumber}</span>
+                  </div>
+                  <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+                    <span className="text-slate-500 dark:text-slate-400 text-sm">Patient ID</span>
+                    <span className="text-slate-800 dark:text-slate-200 font-mono text-sm">{result.data.patientId}</span>
                   </div>
                   <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
                     <span className="text-slate-500 dark:text-slate-400 text-sm">Amount Paid</span>
-                    <span className="text-slate-900 dark:text-white font-bold font-mono text-lg">NGN {result.amount?.toLocaleString()}</span>
+                    <span className="text-slate-900 dark:text-white font-bold font-mono text-lg">
+                      {new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(result.data.amount)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+                    <span className="text-slate-500 dark:text-slate-400 text-sm">Issued</span>
+                    <span className="text-slate-800 dark:text-slate-200 text-sm">
+                      {new Date(result.data.issuedAt).toLocaleString()}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-500 dark:text-slate-400 text-sm">Clearance Status</span>
-                    <span className="text-success font-bold bg-success/10 dark:bg-success/20 px-3 py-1 rounded-full text-xs tracking-wider uppercase">{result.status}</span>
+                    <span className="text-success font-bold bg-success/10 px-3 py-1 rounded-full text-xs tracking-wider uppercase">PAID & CLEARED</span>
                   </div>
                 </div>
               </div>
             ) : (
-              <div className="bg-danger/10 border border-danger/30 dark:border-danger/50 rounded-xl p-6 text-center">
-                <ShieldAlert className="w-16 h-16 text-danger mx-auto mb-4" />
-                <h2 className="text-2xl font-bold text-danger mb-2 tracking-wide">INVALID</h2>
-                <p className="text-danger/80 font-medium">Potential Fraud Detected</p>
-                <p className="text-slate-600 dark:text-slate-400 text-sm mt-4">The cryptographic signature does not match the invoice record or the invoice does not exist.</p>
+              <div className="bg-danger/5 border border-danger/20 rounded-2xl p-6 text-center">
+                <ShieldAlert className="w-20 h-20 text-danger mx-auto mb-4 drop-shadow-md" />
+                <h2 className="text-3xl font-bold text-danger mb-2 tracking-wide">INVALID</h2>
+                <p className="text-danger/80 font-bold uppercase tracking-widest">Fraud Alert</p>
+                <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-4 rounded-xl mt-6">
+                  <p className="text-slate-700 dark:text-slate-300 text-sm">{result.message}</p>
+                </div>
               </div>
             )}
             
-            <button onClick={() => { setResult(null); setInvoiceId(''); setSig(''); }} className="w-full mt-6 text-sm text-slate-500 hover:text-text transition-colors">
-              Verify another receipt
+            <button onClick={() => { setResult(null); setError(null); }} className="w-full mt-6 text-sm font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition-colors">
+              Scan another receipt
             </button>
           </div>
         )}

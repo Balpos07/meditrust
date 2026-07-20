@@ -1,13 +1,28 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
-import Dashboard from './pages/Dashboard';
-import Verify from './pages/Verify';
-import StaffDashboard from './pages/StaffDashboard';
-import Login from './pages/Login';
-import AdminSettings from './pages/AdminSettings';
-import PatientInvoice from './pages/PatientInvoice';
+import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { Stethoscope, ShieldCheck, Activity, Menu, X, Sun, Moon, LogOut } from 'lucide-react';
+import { SocketProvider } from './context/SocketContext';
+import PermissionGate from './components/PermissionGate';
+
+// Icons
+import { Stethoscope, ShieldCheck, Activity, Menu, X, Sun, Moon, LogOut, Users, FileText, Settings as SettingsIcon, Bell } from 'lucide-react';
+
+// Pages
+import Login from './pages/Login';
+import Verify from './pages/Verify';
+import AdminDashboard from './pages/AdminDashboard';
+import PatientList from './pages/Patients/PatientList';
+import PatientCreate from './pages/Patients/PatientCreate';
+import PatientProfile from './pages/Patients/PatientProfile';
+import CreateInvoice from './pages/Billing/CreateInvoice';
+import InvoiceDetail from './pages/Billing/InvoiceDetail';
+import InvoiceList from './pages/Billing/InvoiceList';
+import ReceiptList from './pages/Receipts/ReceiptList';
+import ReceiptDetail from './pages/Receipts/ReceiptDetail';
+import NotificationList from './pages/Notifications/NotificationList';
+import AdminSettings from './pages/AdminSettings';
+import UserManagement from './pages/Users/UserManagement';
 
 const ProtectedRoute = ({ children }) => {
   const { token, loading } = useAuth();
@@ -29,8 +44,15 @@ function Navigation({ theme, toggleTheme }) {
   const { user, token, logout } = useAuth();
 
   const closeMenu = () => setIsMenuOpen(false);
+  const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
 
-  const isActive = (path) => location.pathname === path;
+  const navLinks = [
+    { name: 'Dashboard', path: '/dashboard', icon: <Activity className="w-5 h-5" />, perm: 'DASHBOARD_READ' },
+    { name: 'Patients', path: '/patients', icon: <Users className="w-5 h-5" />, perm: 'PATIENTS_READ' },
+    { name: 'Invoices', path: '/billing', icon: <FileText className="w-5 h-5" />, perm: 'INVOICES_READ' },
+    { name: 'Receipts', path: '/receipts', icon: <ShieldCheck className="w-5 h-5" />, perm: 'RECEIPTS_READ' },
+    { name: 'Scanner', path: '/verify', icon: <ShieldCheck className="w-5 h-5" />, perm: null }, // Publicly accessible scanner? Or is it protected? The README says POST /verify is no auth, but the scanner page could be public. Actually, the prompt says "Verification (Public - No Auth Required)".
+  ];
 
   return (
     <nav className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shadow-sm border-b border-slate-200 dark:border-slate-800 transition-colors duration-500">
@@ -41,20 +63,24 @@ function Navigation({ theme, toggleTheme }) {
         </div>
         
         {/* Desktop Menu */}
-        <div className="hidden md:flex items-center gap-8">
-          <Link to="/" className={`flex items-center gap-2 transition-colors font-medium ${isActive('/') ? 'text-primary' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}>
-             Cashier
-          </Link>
-          <Link to="/staff" className={`flex items-center gap-2 transition-colors font-medium ${isActive('/staff') ? 'text-success' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}>
-            Live Board
-          </Link>
-          <Link to="/verify" className={`flex items-center gap-2 transition-colors font-medium ${isActive('/verify') ? 'text-slate-800 dark:text-slate-200' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}>
-             Security Scanner
-          </Link>
+        <div className="hidden md:flex items-center gap-6">
+          {navLinks.map(link => (
+            <PermissionGate key={link.path} permission={link.perm}>
+              <Link to={link.path} className={`flex items-center gap-2 transition-colors font-medium ${isActive(link.path) && link.path !== '/' ? 'text-primary' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}>
+                {link.name}
+              </Link>
+            </PermissionGate>
+          ))}
           
-          {user?.role === 'ADMIN' && (
+          <PermissionGate permission="DASHBOARD_READ">
+            <Link to="/notifications" className={`flex items-center gap-2 transition-colors font-medium ${isActive('/notifications') ? 'text-primary' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}>
+              <Bell className="w-5 h-5" />
+            </Link>
+          </PermissionGate>
+
+          {user?.role?.name === 'ADMIN' && (
             <Link to="/settings" className={`flex items-center gap-2 transition-colors font-medium ${isActive('/settings') ? 'text-slate-800 dark:text-slate-200' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}>
-               Settings
+               <SettingsIcon className="w-5 h-5" />
             </Link>
           )}
 
@@ -63,7 +89,7 @@ function Navigation({ theme, toggleTheme }) {
           {token && (
             <>
               <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
-                Hi, {user?.username}
+                Hi, {user?.firstName}
               </span>
               <button onClick={logout} className="flex items-center gap-2 text-slate-500 hover:text-danger transition-colors font-medium text-sm">
                 <LogOut size={18} />
@@ -94,18 +120,16 @@ function Navigation({ theme, toggleTheme }) {
       {/* Mobile Menu */}
       {isMenuOpen && (
         <div className="md:hidden absolute top-20 left-0 w-full bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-lg py-4 px-4 flex flex-col gap-4 animate-in slide-in-from-top-2">
-          <Link to="/" onClick={closeMenu} className={`flex items-center gap-3 p-3 rounded-lg transition-colors font-medium ${isActive('/') ? 'bg-primary/10 text-primary' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
-            <Activity className="w-5 h-5" /> Cashier Terminal
-          </Link>
-          <Link to="/staff" onClick={closeMenu} className={`flex items-center gap-3 p-3 rounded-lg transition-colors font-medium ${isActive('/staff') ? 'bg-success/10 text-success' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
-            <Activity className="w-5 h-5" /> Live Dispensary Board
-          </Link>
-          <Link to="/verify" onClick={closeMenu} className={`flex items-center gap-3 p-3 rounded-lg transition-colors font-medium ${isActive('/verify') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
-            <ShieldCheck className="w-5 h-5" /> Security Scanner
-          </Link>
-          {user?.role === 'ADMIN' && (
+          {navLinks.map(link => (
+            <PermissionGate key={link.path} permission={link.perm}>
+              <Link to={link.path} onClick={closeMenu} className={`flex items-center gap-3 p-3 rounded-lg transition-colors font-medium ${isActive(link.path) ? 'bg-primary/10 text-primary' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+                {link.icon} {link.name}
+              </Link>
+            </PermissionGate>
+          ))}
+          {user?.role?.name === 'ADMIN' && (
             <Link to="/settings" onClick={closeMenu} className={`flex items-center gap-3 p-3 rounded-lg transition-colors font-medium ${isActive('/settings') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
-              <ShieldCheck className="w-5 h-5" /> Admin Settings
+              <SettingsIcon className="w-5 h-5" /> Admin Settings
             </Link>
           )}
           {token && (
@@ -135,29 +159,74 @@ function App() {
 
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <div className="min-h-screen bg-background dark:bg-slate-950 bg-dots-pattern relative flex flex-col overflow-hidden text-text dark:text-slate-200 transition-colors duration-500">
-          
-          {/* Premium Background Decorations (Dark Mode Only) */}
-          <div className="hidden dark:block absolute top-0 inset-x-0 h-[500px] bg-gradient-to-b from-primary/10 to-transparent pointer-events-none z-0"></div>
-          <div className="hidden dark:block absolute top-1/4 left-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl -translate-x-1/2 pointer-events-none z-0 animate-breathe"></div>
-          <div className="hidden dark:block absolute bottom-1/4 right-0 w-[40rem] h-[40rem] bg-success/10 rounded-full blur-3xl translate-x-1/4 pointer-events-none z-0 animate-float"></div>
+      <SocketProvider>
+        <BrowserRouter>
+          <div className="min-h-screen bg-background dark:bg-slate-950 bg-dots-pattern relative flex flex-col overflow-hidden text-text dark:text-slate-200 transition-colors duration-500">
+            <Toaster position="top-right" />
+            {/* Premium Background Decorations (Dark Mode Only) */}
+            <div className="hidden dark:block absolute top-0 inset-x-0 h-[500px] bg-gradient-to-b from-primary/10 to-transparent pointer-events-none z-0"></div>
+            <div className="hidden dark:block absolute top-1/4 left-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl -translate-x-1/2 pointer-events-none z-0 animate-breathe"></div>
+            <div className="hidden dark:block absolute bottom-1/4 right-0 w-[40rem] h-[40rem] bg-success/10 rounded-full blur-3xl translate-x-1/4 pointer-events-none z-0 animate-float"></div>
 
-          <div className="w-full mx-auto flex flex-col flex-grow relative z-10">
-            <Navigation theme={theme} toggleTheme={toggleTheme} />
-            <main className="flex-grow relative">
-              <Routes>
-                <Route path="/login" element={<Login />} />
-                <Route path="/pay/:reference" element={<PatientInvoice />} />
-                <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                <Route path="/staff" element={<ProtectedRoute><StaffDashboard /></ProtectedRoute>} />
-                <Route path="/verify" element={<ProtectedRoute><Verify /></ProtectedRoute>} />
-                <Route path="/settings" element={<ProtectedRoute><AdminSettings /></ProtectedRoute>} />
-              </Routes>
-            </main>
+            <div className="w-full mx-auto flex flex-col flex-grow relative z-10">
+              <Navigation theme={theme} toggleTheme={toggleTheme} />
+              <main className="flex-grow relative">
+                <Routes>
+                  {/* Public Routes */}
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/verify" element={<Verify />} />
+
+                  {/* Protected Routes */}
+                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                  
+                  <Route path="/dashboard" element={
+                    <ProtectedRoute><PermissionGate permission="DASHBOARD_READ"><AdminDashboard /></PermissionGate></ProtectedRoute>
+                  } />
+
+                  <Route path="/patients" element={
+                    <ProtectedRoute><PermissionGate permission="PATIENTS_READ"><PatientList /></PermissionGate></ProtectedRoute>
+                  } />
+                  <Route path="/patients/new" element={
+                    <ProtectedRoute><PermissionGate permission="PATIENTS_CREATE"><PatientCreate /></PermissionGate></ProtectedRoute>
+                  } />
+                  <Route path="/patients/:id" element={
+                    <ProtectedRoute><PermissionGate permission="PATIENTS_READ"><PatientProfile /></PermissionGate></ProtectedRoute>
+                  } />
+
+                  <Route path="/billing" element={
+                    <ProtectedRoute><PermissionGate permission="INVOICES_READ"><InvoiceList /></PermissionGate></ProtectedRoute>
+                  } />
+                  <Route path="/billing/new" element={
+                    <ProtectedRoute><PermissionGate permission="INVOICES_CREATE"><CreateInvoice /></PermissionGate></ProtectedRoute>
+                  } />
+                  <Route path="/billing/:invoiceId" element={
+                    <ProtectedRoute><PermissionGate permission="INVOICES_READ"><InvoiceDetail /></PermissionGate></ProtectedRoute>
+                  } />
+
+                  <Route path="/receipts" element={
+                    <ProtectedRoute><PermissionGate permission="RECEIPTS_READ"><ReceiptList /></PermissionGate></ProtectedRoute>
+                  } />
+                  <Route path="/receipts/:id" element={
+                    <ProtectedRoute><PermissionGate permission="RECEIPTS_READ"><ReceiptDetail /></PermissionGate></ProtectedRoute>
+                  } />
+
+                  <Route path="/notifications" element={
+                    <ProtectedRoute><PermissionGate permission="DASHBOARD_READ"><NotificationList /></PermissionGate></ProtectedRoute>
+                  } />
+
+                  <Route path="/users" element={
+                    <ProtectedRoute><PermissionGate permission="ADMIN"><UserManagement /></PermissionGate></ProtectedRoute>
+                  } />
+
+                  <Route path="/settings" element={
+                    <ProtectedRoute><PermissionGate permission="ADMIN"><AdminSettings /></PermissionGate></ProtectedRoute>
+                  } />
+                </Routes>
+              </main>
+            </div>
           </div>
-        </div>
-      </BrowserRouter>
+        </BrowserRouter>
+      </SocketProvider>
     </AuthProvider>
   );
 }
