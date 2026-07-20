@@ -96,7 +96,7 @@ export default function PatientList() {
                 </tr>
               ) : (
                 patients.map(patient => (
-                  <tr key={patient._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                  <tr key={patient._id || patient.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                     <td className="px-6 py-4">
                       <span className="font-mono text-primary font-medium">{patient.patientNumber}</span>
                     </td>
@@ -112,7 +112,7 @@ export default function PatientList() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <Link to={`/patients/${patient._id}`} className="text-primary hover:text-primary/80 font-medium text-sm">
+                      <Link to={`/patients/${patient._id || patient.id}`} className="text-primary hover:text-primary/80 font-medium text-sm">
                         View Profile
                       </Link>
                     </td>

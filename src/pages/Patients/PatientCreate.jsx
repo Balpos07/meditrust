@@ -27,7 +27,8 @@ export default function PatientCreate() {
     try {
       const response = await api.post('/patients', formData);
       toast.success('Patient registered successfully!');
-      navigate(`/patients/${response.data.data._id}`);
+      const patientId = response.data.data?._id || response.data.data?.id || response.data?._id || response.data?.id;
+      navigate(`/patients/${patientId}`);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to register patient');
     } finally {

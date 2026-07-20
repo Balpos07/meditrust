@@ -63,7 +63,7 @@ export default function ReceiptList() {
                 </tr>
               ) : (
                 receipts.map(receipt => (
-                  <tr key={receipt._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                  <tr key={receipt._id || receipt.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-success/10 rounded-lg flex items-center justify-center text-success">
@@ -79,7 +79,7 @@ export default function ReceiptList() {
                        <span className="text-success bg-success/10 px-2 py-1 rounded-full text-xs font-bold border border-success/20">ISSUED</span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <Link to={`/receipts/${receipt._id}`} className="text-primary hover:text-primary/80 font-medium text-sm">
+                      <Link to={`/receipts/${receipt._id || receipt.id}`} className="text-primary hover:text-primary/80 font-medium text-sm">
                         View
                       </Link>
                     </td>

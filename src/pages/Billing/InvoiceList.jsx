@@ -70,7 +70,7 @@ export default function InvoiceList() {
                 </tr>
               ) : (
                 invoices.map(invoice => (
-                  <tr key={invoice._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                  <tr key={invoice._id || invoice.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                     <td className="px-6 py-4 font-mono text-sm font-medium text-slate-900 dark:text-slate-200">
                       {invoice.invoiceNumber}
                     </td>
@@ -87,7 +87,7 @@ export default function InvoiceList() {
                       {invoice.status === 'CANCELLED' && <span className="text-danger bg-danger/10 px-2 py-1 rounded-full text-xs font-bold">CANCELLED</span>}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <Link to={`/billing/${invoice._id}`} className="text-primary hover:text-primary/80 font-medium text-sm">
+                      <Link to={`/billing/${invoice._id || invoice.id}`} className="text-primary hover:text-primary/80 font-medium text-sm">
                         View
                       </Link>
                     </td>

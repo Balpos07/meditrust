@@ -58,7 +58,7 @@ export default function PatientProfile() {
         </div>
         
         <PermissionGate permission="INVOICES_CREATE">
-          <Link to={`/billing/new?patientId=${patient._id}`} className="btn-primary flex items-center gap-2">
+          <Link to={`/billing/new?patientId=${patient._id || patient.id}`} className="btn-primary flex items-center gap-2">
             <Plus size={18} /> New Invoice
           </Link>
         </PermissionGate>
@@ -155,7 +155,7 @@ export default function PatientProfile() {
                     </tr>
                   ) : (
                     invoices.map(invoice => (
-                      <tr key={invoice._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                      <tr key={invoice._id || invoice.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                         <td className="px-6 py-4 font-mono text-sm text-slate-900 dark:text-slate-200">
                           {invoice.invoiceNumber}
                         </td>
@@ -172,7 +172,7 @@ export default function PatientProfile() {
                           {invoice.status === 'CANCELLED' && <span className="text-danger bg-danger/10 px-2 py-1 rounded-full text-xs font-bold">CANCELLED</span>}
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <Link to={`/billing/${invoice._id}`} className="text-primary hover:text-primary/80 font-medium text-sm">
+                          <Link to={`/billing/${invoice._id || invoice.id}`} className="text-primary hover:text-primary/80 font-medium text-sm">
                             View
                           </Link>
                         </td>

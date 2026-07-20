@@ -60,7 +60,8 @@ export default function CreateInvoice() {
       });
       toast.success('Invoice created successfully!');
       // Navigate to the invoice detail page where virtual account info will appear
-      navigate(`/billing/${response.data.data._id}`);
+      const invoiceId = response.data.data?._id || response.data.data?.id || response.data?._id || response.data?.id;
+      navigate(`/billing/${invoiceId}`);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to generate invoice');
     } finally {

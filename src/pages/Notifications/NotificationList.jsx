@@ -24,7 +24,7 @@ export default function NotificationList() {
   const markAsRead = async (id) => {
     try {
       await api.patch(`/notifications/${id}/read`);
-      setNotifications(notifications.map(n => n._id === id ? { ...n, isRead: true } : n));
+      setNotifications(notifications.map(n => (n._id || n.id) === id ? { ...n, isRead: true } : n));
     } catch (error) {
       console.error('Failed to mark notification as read');
     }
@@ -78,7 +78,7 @@ export default function NotificationList() {
           <div className="divide-y divide-slate-100 dark:divide-slate-800">
             {notifications.map((notification) => (
               <div 
-                key={notification._id} 
+                key={notification._id || notification.id} 
                 className={`p-4 sm:p-6 transition-colors flex gap-4 ${!notification.isRead ? 'bg-primary/5 dark:bg-primary/10' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
               >
                 <div className="pt-1 shrink-0">
@@ -100,7 +100,7 @@ export default function NotificationList() {
                 {!notification.isRead && (
                   <div className="shrink-0 flex items-center">
                     <button 
-                      onClick={() => markAsRead(notification._id)}
+                      onClick={() => markAsRead(notification._id || notification.id)}
                       className="w-2.5 h-2.5 rounded-full bg-primary flex items-center justify-center hover:bg-primary/80 transition-colors"
                       title="Mark as read"
                     ></button>
