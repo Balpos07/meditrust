@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Link, useLocation, Navigate } from 'react
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
+import { NotificationsProvider, useNotifications } from './context/NotificationsContext';
 import PermissionGate from './components/PermissionGate';
 
 // Icons
@@ -43,6 +44,7 @@ function Navigation({ theme, toggleTheme }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const { user, token, logout } = useAuth();
+  const { unreadCount } = useNotifications() || {};
 
   const closeMenu = () => setIsMenuOpen(false);
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
@@ -74,8 +76,13 @@ function Navigation({ theme, toggleTheme }) {
           ))}
           
           <PermissionGate permission="DASHBOARD_READ">
-            <Link to="/notifications" className={`flex items-center gap-2 transition-colors font-medium ${isActive('/notifications') ? 'text-primary' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}>
+            <Link to="/notifications" className={`relative flex items-center gap-2 transition-colors font-medium ${isActive('/notifications') ? 'text-primary' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}>
               <Bell className="w-5 h-5" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-2 -right-2 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-danger text-white text-[10px] font-bold leading-none">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
             </Link>
           </PermissionGate>
 
@@ -134,6 +141,18 @@ function Navigation({ theme, toggleTheme }) {
                 </Link>
               </PermissionGate>
             ))}
+            <PermissionGate permission="DASHBOARD_READ">
+              <Link to="/notifications" onClick={closeMenu} className={`flex items-center gap-4 p-4 rounded-xl transition-all duration-200 font-medium ${isActive('/notifications') ? 'bg-primary/10 text-primary scale-[0.98]' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:scale-[0.98]'}`}>
+                <span className="relative"><Bell className="w-6 h-6" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-[16px] px-1 flex items-center justify-center rounded-full bg-danger text-white text-[9px] font-bold leading-none">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </span>
+                <span className="text-lg">Notifications</span>
+              </Link>
+            </PermissionGate>
             {user?.role?.name === 'ADMIN' && (
               <Link to="/settings" onClick={closeMenu} className={`flex items-center gap-4 p-4 rounded-xl transition-all duration-200 font-medium ${isActive('/settings') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 scale-[0.98]' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:scale-[0.98]'}`}>
                 <SettingsIcon className="w-6 h-6" /> <span className="text-lg">Admin Settings</span>
@@ -182,6 +201,7 @@ function App() {
   return (
     <AuthProvider>
       <SocketProvider>
+        <NotificationsProvider>
         <BrowserRouter>
           <div className="min-h-screen bg-background dark:bg-slate-950 bg-dots-pattern relative flex flex-col overflow-hidden text-text dark:text-slate-200 transition-colors duration-500">
             <Toaster position="top-right" />
@@ -248,6 +268,7 @@ function App() {
             </div>
           </div>
         </BrowserRouter>
+        </NotificationsProvider>
       </SocketProvider>
     </AuthProvider>
   );

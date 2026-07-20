@@ -22,36 +22,50 @@ export default function Verify() {
   useEffect(() => {
     let scanner = null;
     if (isScanning) {
-      scanner = new Html5QrcodeScanner("reader", { 
-        fps: 10, 
-        qrbox: { width: 250, height: 250 },
-        experimentalFeatures: {
-          useBarCodeDetectorIfSupported: true
-        }
-      }, false);
-      scanner.render(
-        (decodedText) => {
-          // Expected format: https://domain.com/verify?token=XXX
-          try {
-            scanner.clear();
-            setIsScanning(false);
-            const url = new URL(decodedText);
-            const token = url.searchParams.get('token');
-            if (token) {
-              handleVerify(token);
-            } else {
-              setError("Invalid QR Code: Missing token parameter.");
-            }
-          } catch (e) {
-            scanner.clear();
-            setIsScanning(false);
-            setError("Invalid QR Code format.");
+      try {
+        scanner = new Html5QrcodeScanner("reader", {
+          fps: 10,
+          // A fixed { width: 250, height: 250 } qrbox breaks (renders a blank/black
+          // viewfinder) whenever the container is narrower than 250px — which happens
+          // on most phones once the card's padding is subtracted. Sizing the box
+          // relative to the actual viewfinder avoids that entirely.
+          qrbox: (viewfinderWidth, viewfinderHeight) => {
+            const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+            const size = Math.max(Math.floor(minEdge * 0.7), 150);
+            return { width: size, height: size };
+          },
+          experimentalFeatures: {
+            useBarCodeDetectorIfSupported: true
           }
-        },
-        (err) => {
-          // ignore scan failures
-        }
-      );
+        }, false);
+        scanner.render(
+          (decodedText) => {
+            // Expected format: https://domain.com/verify?token=XXX
+            try {
+              scanner.clear();
+              setIsScanning(false);
+              const url = new URL(decodedText);
+              const token = url.searchParams.get('token');
+              if (token) {
+                handleVerify(token);
+              } else {
+                setError("Invalid QR Code: Missing token parameter.");
+              }
+            } catch (e) {
+              scanner.clear();
+              setIsScanning(false);
+              setError("Invalid QR Code format.");
+            }
+          },
+          (err) => {
+            // ignore scan failures (fired continuously while no QR code is in view)
+          }
+        );
+      } catch (e) {
+        console.error('Failed to start QR scanner:', e);
+        setIsScanning(false);
+        setError('Could not start the camera scanner. Please check camera permissions and try again.');
+      }
     }
 
     return () => {
@@ -85,7 +99,7 @@ export default function Verify() {
 
   return (
     <div className="w-[95%] lg:w-[80%] mx-auto  max-w-nonepx-4 py-12 flex justify-center items-start min-h-screen pt-12 md:pt-24 bg-slate-50 dark:bg-slate-950">
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-lg p-8 md:p-10 relative z-10 shadow-lg transition-all duration-500">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-lg p-5 sm:p-8 md:p-10 relative z-10 shadow-lg transition-all duration-500">
         
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-primary/10 dark:bg-primary/20 rounded-2xl flex items-center justify-center mx-auto mb-4 text-primary">
