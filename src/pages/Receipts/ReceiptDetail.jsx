@@ -13,9 +13,10 @@ export default function ReceiptDetail() {
 
   const fetchReceipt = async () => {
     try {
-      const response = await api.get(`/receipts/${id}`);
+      const response = await api.get(`/receipts/id/${id}`);
       setReceipt(response.data.data || response.data.receipt || response.data);
     } catch (error) {
+      console.error('Failed to load receipt:', error);
       toast.error('Failed to load receipt');
     } finally {
       setLoading(false);
@@ -29,9 +30,10 @@ export default function ReceiptDetail() {
   const handleResend = async () => {
     setResending(true);
     try {
-      await api.post(`/receipts/${id}/resend`);
+      await api.post(`/receipts/id/${id}/resend`);
       toast.success('Receipt queued for resending!');
     } catch (error) {
+      console.error('Failed to resend receipt:', error);
       toast.error('Failed to resend receipt');
     } finally {
       setResending(false);

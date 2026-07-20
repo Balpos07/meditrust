@@ -20,18 +20,33 @@ export const SocketProvider = ({ children }) => {
       return;
     }
 
-    const socketUrl = import.meta.env.VITE_WS_URL 
-      ? `${import.meta.env.VITE_WS_URL}/events` 
-      : '/events';
+    // Construct Socket.IO URL with proper protocol handling
+    let socketUrl;
+    if (import.meta.env.VITE_WS_URL) {
+      // Use configured backend URL - ensure proper protocol
+      socketUrl = import.meta.env.VITE_WS_URL.includes('http') 
+        ? import.meta.env.VITE_WS_URL 
+        : `https://${import.meta.env.VITE_WS_URL}`;
+    } else {
+      // Fallback to current domain
+      socketUrl = window.location.origin;
+    }
 
-    const newSocket = io(socketUrl, {
+    const eventsUrl = `${socketUrl}/events`;
+    console.log('🔌 Attempting Socket.IO connection to:', eventsUrl);
+
+    const newSocket = io(eventsUrl, {
       auth: { token },
-      transports: ['websocket'],
+      transports: ['websocket', 'polling'], // Fallback to polling if WebSocket fails
       reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      secure: true,
+      rejectUnauthorized: false,
     });
 
     newSocket.on('connect', () => {
-      console.log('Socket connected');
+      console.log('✅ Socket connected successfully');
       setIsConnected(true);
       
       // Based on roles, join specific rooms.
@@ -52,12 +67,17 @@ export const SocketProvider = ({ children }) => {
     });
 
     newSocket.on('disconnect', () => {
-      console.log('Socket disconnected');
+      console.log('❌ Socket disconnected');
       setIsConnected(false);
     });
 
     newSocket.on('connect_error', (err) => {
-      console.error('Socket connection error:', err);
+      console.error('⚠️ Socket connection error:', err);
+      console.log('Retrying with polling fallback...');
+    });
+
+    newSocket.on('error', (error) => {
+      console.error('⚠️ Socket error:', error);
     });
 
     setSocket(newSocket);
