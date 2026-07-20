@@ -14,9 +14,7 @@ export default function PatientCreate() {
     gender: 'MALE',
     email: '',
     phone: '',
-    address: '',
-    bloodGroup: '',
-    genotype: ''
+    address: ''
   });
 
   const handleChange = (e) => {
@@ -119,40 +117,7 @@ export default function PatientCreate() {
             </div>
           </div>
 
-          <hr className="border-slate-200 dark:border-slate-800" />
 
-          {/* Medical Info */}
-          <div>
-            <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
-              <Activity className="w-5 h-5 text-primary" /> Medical Profile (Optional)
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Blood Group</label>
-                <select name="bloodGroup" value={formData.bloodGroup} onChange={handleChange} className="input-field">
-                  <option value="">Select Blood Group...</option>
-                  <option value="A+">A+</option>
-                  <option value="A-">A-</option>
-                  <option value="B+">B+</option>
-                  <option value="B-">B-</option>
-                  <option value="O+">O+</option>
-                  <option value="O-">O-</option>
-                  <option value="AB+">AB+</option>
-                  <option value="AB-">AB-</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Genotype</label>
-                <select name="genotype" value={formData.genotype} onChange={handleChange} className="input-field">
-                  <option value="">Select Genotype...</option>
-                  <option value="AA">AA</option>
-                  <option value="AS">AS</option>
-                  <option value="SS">SS</option>
-                  <option value="AC">AC</option>
-                </select>
-              </div>
-            </div>
-          </div>
 
         </div>
 

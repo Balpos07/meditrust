@@ -22,7 +22,7 @@ export const SocketProvider = ({ children }) => {
 
     const socketUrl = import.meta.env.VITE_WS_URL 
       ? `${import.meta.env.VITE_WS_URL}/events` 
-      : 'ws://localhost:3000/events';
+      : '/events';
 
     const newSocket = io(socketUrl, {
       auth: { token },
