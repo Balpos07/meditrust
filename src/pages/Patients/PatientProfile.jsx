@@ -74,7 +74,7 @@ export default function PatientProfile() {
     <div className="w-[95%] lg:w-[80%] mx-auto px-4 py-8 max-w-none">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white flex flex-wrap items-center gap-3">
             {patient.firstName} {patient.lastName}
             <span className="text-sm font-mono bg-primary/10 text-primary px-3 py-1 rounded-full">{patient.patientNumber}</span>
           </h1>
@@ -82,7 +82,7 @@ export default function PatientProfile() {
         </div>
         
         <PermissionGate permission="INVOICES_CREATE">
-          <Link to={`/billing/new?patientId=${patient._id || patient.id}`} className="btn-primary flex items-center gap-2">
+          <Link to={`/billing/new?patientId=${patient._id || patient.id}`} className="btn-primary flex items-center justify-center gap-2 w-full sm:w-auto">
             <Plus size={18} /> New Invoice
           </Link>
         </PermissionGate>
@@ -158,8 +158,33 @@ export default function PatientProfile() {
                 <FileText className="w-5 h-5 text-primary" /> Billing History
               </h3>
             </div>
-            
-            <div className="overflow-x-auto">
+
+            {/* Mobile Card List */}
+            <div className="md:hidden divide-y divide-slate-200 dark:divide-slate-800">
+              {invoices.length === 0 ? (
+                <div className="px-6 py-8 text-center text-slate-500">No billing history for this patient.</div>
+              ) : (
+                invoices.map(invoice => (
+                  <Link key={invoice._id || invoice.id} to={`/billing/${invoice._id || invoice.id}`} className="block px-4 py-4 active:bg-slate-50 dark:active:bg-slate-800/50 transition-colors">
+                    <div className="flex justify-between items-start gap-3">
+                      <div className="min-w-0">
+                        <p className="font-mono text-sm font-medium text-slate-900 dark:text-slate-200 truncate">{invoice.invoiceNumber}</p>
+                        <p className="text-sm text-slate-500 mt-0.5">{new Date(invoice.createdAt).toLocaleDateString()}</p>
+                      </div>
+                      {invoice.status === 'PAID' && <span className="shrink-0 text-success bg-success/10 px-2 py-1 rounded-full text-xs font-bold">PAID</span>}
+                      {invoice.status === 'PENDING_PAYMENT' && <span className="shrink-0 text-yellow-600 bg-yellow-500/10 px-2 py-1 rounded-full text-xs font-bold">PENDING</span>}
+                      {invoice.status === 'PARTIALLY_PAID' && <span className="shrink-0 text-orange-600 bg-orange-500/10 px-2 py-1 rounded-full text-xs font-bold">PARTIAL</span>}
+                      {invoice.status === 'CANCELLED' && <span className="shrink-0 text-danger bg-danger/10 px-2 py-1 rounded-full text-xs font-bold">CANCELLED</span>}
+                    </div>
+                    <p className="text-sm font-medium mt-2">
+                      {new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(invoice.grandTotal)}
+                    </p>
+                  </Link>
+                ))
+              )}
+            </div>
+
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left">
                 <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 text-sm">
                   <tr>
@@ -215,8 +240,27 @@ export default function PatientProfile() {
                 <FileCheck className="w-5 h-5 text-success" /> Payment Receipts
               </h3>
             </div>
-            
-            <div className="overflow-x-auto">
+
+            {/* Mobile Card List */}
+            <div className="md:hidden divide-y divide-slate-200 dark:divide-slate-800">
+              {receipts.length === 0 ? (
+                <div className="px-6 py-8 text-center text-slate-500">No payment receipts found for this patient.</div>
+              ) : (
+                receipts.map(receipt => (
+                  <Link key={receipt._id || receipt.id} to={`/receipts/${receipt.receiptNumber || receipt._id || receipt.id}`} className="block px-4 py-4 active:bg-slate-50 dark:active:bg-slate-800/50 transition-colors">
+                    <div className="flex justify-between items-center gap-3">
+                      <div className="min-w-0">
+                        <p className="font-mono text-sm text-slate-900 dark:text-slate-200 truncate">{receipt.receiptNumber}</p>
+                        <p className="text-sm text-slate-500 mt-0.5">{new Date(receipt.issuedAt || receipt.createdAt).toLocaleDateString()}</p>
+                      </div>
+                      <span className="shrink-0 text-success bg-success/10 px-2 py-1 rounded-full text-xs font-bold">ISSUED</span>
+                    </div>
+                  </Link>
+                ))
+              )}
+            </div>
+
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left">
                 <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 text-sm">
                   <tr>

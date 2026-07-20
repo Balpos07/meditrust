@@ -39,7 +39,7 @@ export default function PatientCreate() {
   return (
     <div className="w-[95%] lg:w-[80%] mx-auto px-4 py-8 max-w-none">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Register Patient</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">Register Patient</h1>
         <p className="text-slate-500 dark:text-slate-400 mt-1">Create a new patient record in the system.</p>
       </div>
 

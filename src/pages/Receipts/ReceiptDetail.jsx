@@ -83,18 +83,18 @@ export default function ReceiptDetail() {
       </Link>
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Receipt {receipt.receiptNumber}</h1>
+        <div className="min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white break-words">Receipt {receipt.receiptNumber}</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">Issued on {new Date(receipt.issuedAt).toLocaleString()}</p>
         </div>
         
-        <div className="flex gap-3">
-          <a href={pdfBlobUrl || undefined} download={`${receipt.receiptNumber}.pdf`} target="_blank" rel="noreferrer" className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+        <div className="flex flex-wrap gap-3 w-full md:w-auto">
+          <a href={pdfBlobUrl || undefined} download={`${receipt.receiptNumber}.pdf`} target="_blank" rel="noreferrer" className="flex-1 md:flex-none justify-center px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
             <Download size={16} /> Download
           </a>
           
           <PermissionGate permission="RECEIPTS_RESEND">
-            <button onClick={handleResend} disabled={resending} className="px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+            <button onClick={handleResend} disabled={resending} className="flex-1 md:flex-none justify-center px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
               {resending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />} 
               Resend SMS/Email
             </button>
@@ -102,7 +102,7 @@ export default function ReceiptDetail() {
         </div>
       </div>
 
-      <div className="bg-slate-100 dark:bg-slate-900 rounded-2xl shadow-inner border border-slate-200 dark:border-slate-800 overflow-hidden h-[800px] relative">
+      <div className="bg-slate-100 dark:bg-slate-900 rounded-2xl shadow-inner border border-slate-200 dark:border-slate-800 overflow-hidden h-[60vh] sm:h-[70vh] md:h-[800px] relative">
         {pdfBlobUrl ? (
           <iframe 
             src={`${pdfBlobUrl}#toolbar=0`} 

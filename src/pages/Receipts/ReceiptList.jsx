@@ -37,13 +37,49 @@ export default function ReceiptList() {
     <div className="w-[95%] lg:w-[80%] mx-auto px-4 py-8 max-w-none">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Receipts</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">Receipts</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">View and manage issued payment receipts.</p>
         </div>
       </div>
 
       <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Mobile Card List */}
+        <div className="md:hidden divide-y divide-slate-200 dark:divide-slate-800">
+          {loading ? (
+            <div className="px-6 py-12 text-center">
+              <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary mb-2" />
+              <p className="text-slate-500">Loading receipts...</p>
+            </div>
+          ) : receipts.length === 0 ? (
+            <div className="px-6 py-12 text-center text-slate-500">
+              No receipts found.
+            </div>
+          ) : (
+            receipts.map(receipt => (
+              <Link
+                key={receipt._id || receipt.id}
+                to={`/receipts/${receipt._id || receipt.id}`}
+                className="block px-4 py-4 active:bg-slate-50 dark:active:bg-slate-800/50 transition-colors"
+              >
+                <div className="flex justify-between items-center gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-8 h-8 shrink-0 bg-success/10 rounded-lg flex items-center justify-center text-success">
+                      <FileCheck size={16} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-mono font-medium text-slate-900 dark:text-slate-200 truncate">{receipt.receiptNumber}</p>
+                      <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">{new Date(receipt.issuedAt).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                  <span className="shrink-0 text-success bg-success/10 px-2 py-1 rounded-full text-xs font-bold border border-success/20">ISSUED</span>
+                </div>
+              </Link>
+            ))
+          )}
+        </div>
+
+        {/* Desktop Table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-sm uppercase tracking-wider">

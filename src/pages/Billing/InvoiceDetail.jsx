@@ -105,13 +105,13 @@ export default function InvoiceDetail() {
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
         <div>
-          <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Invoice Detail</h1>
+          <div className="flex flex-wrap items-center gap-3 mb-1">
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">Invoice Detail</h1>
             {invoice.status === 'PAID' && <span className="text-success bg-success/10 px-3 py-1 rounded-full text-sm font-bold border border-success/20 flex items-center gap-1"><CheckCircle className="w-4 h-4" /> PAID</span>}
             {invoice.status === 'PENDING_PAYMENT' && <span className="text-yellow-600 bg-yellow-500/10 px-3 py-1 rounded-full text-sm font-bold border border-yellow-500/20">PENDING</span>}
             {invoice.status === 'CANCELLED' && <span className="text-danger bg-danger/10 px-3 py-1 rounded-full text-sm font-bold border border-danger/20">CANCELLED</span>}
           </div>
-          <p className="font-mono text-slate-500 dark:text-slate-400">{invoice.invoiceNumber}</p>
+          <p className="font-mono text-slate-500 dark:text-slate-400 break-all">{invoice.invoiceNumber}</p>
         </div>
       </div>
 

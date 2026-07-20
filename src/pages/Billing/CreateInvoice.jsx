@@ -76,7 +76,7 @@ export default function CreateInvoice() {
   return (
     <div className="w-[95%] lg:w-[80%] mx-auto px-4 py-8 max-w-none">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Create Invoice</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">Create Invoice</h1>
         <p className="text-slate-500 dark:text-slate-400 mt-1">Generate a new bill for a patient.</p>
       </div>
 
@@ -87,12 +87,12 @@ export default function CreateInvoice() {
             <User className="w-5 h-5 text-primary" /> Patient Details
           </h2>
           {patientDetails ? (
-            <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
-              <div>
-                <p className="font-bold text-slate-900 dark:text-white">{patientDetails.firstName} {patientDetails.lastName}</p>
-                <p className="text-sm text-slate-500">{patientDetails.patientNumber} • {patientDetails.phone}</p>
+            <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+              <div className="min-w-0">
+                <p className="font-bold text-slate-900 dark:text-white truncate">{patientDetails.firstName} {patientDetails.lastName}</p>
+                <p className="text-sm text-slate-500 truncate">{patientDetails.patientNumber} • {patientDetails.phone}</p>
               </div>
-              <button type="button" onClick={() => { setPatientId(''); setPatientDetails(null); }} className="text-sm text-primary hover:underline">
+              <button type="button" onClick={() => { setPatientId(''); setPatientDetails(null); }} className="text-sm text-primary hover:underline shrink-0">
                 Change
               </button>
             </div>
