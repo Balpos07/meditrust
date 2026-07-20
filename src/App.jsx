@@ -104,40 +104,61 @@ function Navigation({ theme, toggleTheme }) {
         </div>
 
         {/* Mobile Hamburger & Theme Toggle */}
-        <div className="md:hidden flex items-center gap-3">
-          <button onClick={toggleTheme} className="p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+        <div className="md:hidden flex items-center gap-2">
+          <button onClick={toggleTheme} className="p-2.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors shadow-sm">
             {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </button>
           <button 
-            className="p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 focus:outline-none" 
+            className={`p-2.5 rounded-full transition-all duration-300 shadow-sm ${isMenuOpen ? 'bg-primary text-white shadow-primary/30' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'}`}
             onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label="Toggle Menu"
           >
-            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu Overlay */}
       {isMenuOpen && (
-        <div className="md:hidden absolute top-20 left-0 w-full bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-lg py-4 px-4 flex flex-col gap-4 animate-in slide-in-from-top-2">
-          {navLinks.map(link => (
-            <PermissionGate key={link.path} permission={link.perm}>
-              <Link to={link.path} onClick={closeMenu} className={`flex items-center gap-3 p-3 rounded-lg transition-colors font-medium ${isActive(link.path) ? 'bg-primary/10 text-primary' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
-                {link.icon} {link.name}
+        <>
+          <div 
+            className="md:hidden fixed inset-0 top-20 bg-slate-900/20 dark:bg-slate-900/60 backdrop-blur-sm z-40"
+            onClick={closeMenu}
+          ></div>
+          <div className="md:hidden absolute top-20 left-0 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50 shadow-2xl py-6 px-4 flex flex-col gap-2 z-50 animate-in slide-in-from-top-2 duration-300">
+            {navLinks.map(link => (
+              <PermissionGate key={link.path} permission={link.perm}>
+                <Link to={link.path} onClick={closeMenu} className={`flex items-center gap-4 p-4 rounded-xl transition-all duration-200 font-medium ${isActive(link.path) ? 'bg-primary/10 text-primary scale-[0.98]' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:scale-[0.98]'}`}>
+                  {link.icon} <span className="text-lg">{link.name}</span>
+                </Link>
+              </PermissionGate>
+            ))}
+            {user?.role?.name === 'ADMIN' && (
+              <Link to="/settings" onClick={closeMenu} className={`flex items-center gap-4 p-4 rounded-xl transition-all duration-200 font-medium ${isActive('/settings') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 scale-[0.98]' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:scale-[0.98]'}`}>
+                <SettingsIcon className="w-6 h-6" /> <span className="text-lg">Admin Settings</span>
               </Link>
-            </PermissionGate>
-          ))}
-          {user?.role?.name === 'ADMIN' && (
-            <Link to="/settings" onClick={closeMenu} className={`flex items-center gap-3 p-3 rounded-lg transition-colors font-medium ${isActive('/settings') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
-              <SettingsIcon className="w-5 h-5" /> Admin Settings
-            </Link>
-          )}
-          {token && (
-            <button onClick={() => { logout(); closeMenu(); }} className="flex items-center gap-3 p-3 rounded-lg transition-colors font-medium text-slate-600 dark:text-slate-300 hover:text-danger hover:bg-slate-50 dark:hover:bg-slate-800 w-full text-left">
-              <LogOut className="w-5 h-5" /> Logout
-            </button>
-          )}
-        </div>
+            )}
+            
+            <div className="w-full h-px bg-slate-200 dark:bg-slate-800 my-2"></div>
+            
+            {token && (
+              <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
+                    {user?.firstName?.[0] || 'U'}
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">{user?.firstName} {user?.lastName}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 capitalize">{user?.role?.name.toLowerCase()}</p>
+                  </div>
+                </div>
+                <button onClick={() => { logout(); closeMenu(); }} className="p-2.5 rounded-lg text-danger hover:bg-danger/10 transition-colors" title="Logout">
+                  <LogOut className="w-5 h-5" />
+                </button>
+              </div>
+            )}
+          </div>
+        </>
       )}
     </nav>
   );
