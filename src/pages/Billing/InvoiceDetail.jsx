@@ -15,8 +15,16 @@ export default function InvoiceDetail() {
   const fetchInvoice = async () => {
     try {
       const response = await api.get(`/billing/invoices/${invoiceId}`);
-      console.log('Fetched Invoice from backend:', response.data.data);
-      setInvoice(response.data.data);
+      const fetchedInvoice = response.data.data;
+      console.log('Fetched Invoice from backend:', fetchedInvoice);
+      // The backend populates the linked virtual account under `virtualAccountId`
+      // (the schema's ref field name), not `virtualAccount`. Normalize it here so the
+      // UI shows already-generated accounts immediately instead of waiting forever
+      // for a socket event that may have already fired before this page was open.
+      setInvoice({
+        ...fetchedInvoice,
+        virtualAccount: fetchedInvoice.virtualAccountId || fetchedInvoice.virtualAccount || null,
+      });
     } catch (error) {
       toast.error('Failed to load invoice');
     } finally {
