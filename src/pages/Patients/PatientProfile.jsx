@@ -29,13 +29,16 @@ export default function PatientProfile() {
         }
         
         try {
-          const receiptsRes = await api.get(`/receipts?patientId=${id}&limit=50`);
+          const receiptsRes = await api.get('/receipts');
           let rData = receiptsRes.data.data;
           if (rData && !Array.isArray(rData)) {
             rData = rData.receipts || rData.data || rData.items || [];
           }
           rData = rData || receiptsRes.data.receipts || receiptsRes.data || [];
-          setReceipts(Array.isArray(rData) ? rData : []);
+          const filteredReceipts = Array.isArray(rData) 
+            ? rData.filter(r => String(r.patient) === String(id) || String(r.patientId) === String(id) || String(r.patient?._id) === String(id))
+            : [];
+          setReceipts(filteredReceipts);
         } catch (receiptsErr) {
           console.warn('Could not load receipts:', receiptsErr);
           setReceipts([]);
@@ -243,7 +246,7 @@ export default function PatientProfile() {
                           <span className="text-success bg-success/10 px-2 py-1 rounded-full text-xs font-bold">ISSUED</span>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <Link to={`/receipts/${receipt._id || receipt.id}`} className="text-primary hover:text-primary/80 font-medium text-sm">
+                          <Link to={`/receipts/${receipt.receiptNumber || receipt._id || receipt.id}`} className="text-primary hover:text-primary/80 font-medium text-sm">
                             View
                           </Link>
                         </td>

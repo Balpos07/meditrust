@@ -13,7 +13,7 @@ export default function ReceiptList() {
   const fetchReceipts = async (currentPage) => {
     setLoading(true);
     try {
-      const response = await api.get(`/receipts?page=${currentPage}&limit=20`);
+      const response = await api.get('/receipts');
       let receiptsData = response.data.data;
       if (receiptsData && !Array.isArray(receiptsData)) {
         receiptsData = receiptsData.receipts || receiptsData.data || receiptsData.items || [];
@@ -85,7 +85,7 @@ export default function ReceiptList() {
                        <span className="text-success bg-success/10 px-2 py-1 rounded-full text-xs font-bold border border-success/20">ISSUED</span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <Link to={`/receipts/${receipt._id || receipt.id}`} className="text-primary hover:text-primary/80 font-medium text-sm">
+                      <Link to={`/receipts/${receipt.receiptNumber || receipt._id || receipt.id}`} className="text-primary hover:text-primary/80 font-medium text-sm">
                         View
                       </Link>
                     </td>
