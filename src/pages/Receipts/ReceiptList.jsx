@@ -14,8 +14,14 @@ export default function ReceiptList() {
     setLoading(true);
     try {
       const response = await api.get(`/receipts?page=${currentPage}&limit=20`);
-      setReceipts(response.data.data);
-      setMeta(response.data.meta);
+      let receiptsData = response.data.data;
+      if (receiptsData && !Array.isArray(receiptsData)) {
+        receiptsData = receiptsData.receipts || receiptsData.data || receiptsData.items || [];
+      }
+      receiptsData = receiptsData || response.data.receipts || response.data || [];
+      
+      setReceipts(Array.isArray(receiptsData) ? receiptsData : []);
+      setMeta(response.data.meta || { totalPages: 1, total: Array.isArray(receiptsData) ? receiptsData.length : 0 });
     } catch (error) {
       console.error('Failed to fetch receipts', error);
     } finally {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { User, Phone, Mail, MapPin, Calendar, Activity, Loader2, FileText, Plus } from 'lucide-react';
+import { User, Phone, Mail, MapPin, Calendar, Activity, Loader2, FileText, Plus, FileCheck } from 'lucide-react';
 import api from '../../lib/axios';
 import PermissionGate from '../../components/PermissionGate';
 
@@ -8,6 +8,7 @@ export default function PatientProfile() {
   const { id } = useParams();
   const [patient, setPatient] = useState(null);
   const [invoices, setInvoices] = useState([]);
+  const [receipts, setReceipts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -25,6 +26,19 @@ export default function PatientProfile() {
           // we gracefully fallback to an empty array instead of crashing the profile.
           console.warn('Could not load invoices or patient has no invoices:', invoiceErr);
           setInvoices([]);
+        }
+        
+        try {
+          const receiptsRes = await api.get(`/receipts?patientId=${id}&limit=50`);
+          let rData = receiptsRes.data.data;
+          if (rData && !Array.isArray(rData)) {
+            rData = rData.receipts || rData.data || rData.items || [];
+          }
+          rData = rData || receiptsRes.data.receipts || receiptsRes.data || [];
+          setReceipts(Array.isArray(rData) ? rData : []);
+        } catch (receiptsErr) {
+          console.warn('Could not load receipts:', receiptsErr);
+          setReceipts([]);
         }
         
       } catch (error) {
@@ -180,6 +194,56 @@ export default function PatientProfile() {
                         </td>
                         <td className="px-6 py-4 text-right">
                           <Link to={`/billing/${invoice._id || invoice.id}`} className="text-primary hover:text-primary/80 font-medium text-sm">
+                            View
+                          </Link>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Receipts Table */}
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden mt-8">
+            <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <FileCheck className="w-5 h-5 text-success" /> Payment Receipts
+              </h3>
+            </div>
+            
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 text-sm">
+                  <tr>
+                    <th className="px-6 py-3 font-medium">Receipt #</th>
+                    <th className="px-6 py-3 font-medium">Date</th>
+                    <th className="px-6 py-3 font-medium">Status</th>
+                    <th className="px-6 py-3 font-medium"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                  {receipts.length === 0 ? (
+                    <tr>
+                      <td colSpan="4" className="px-6 py-8 text-center text-slate-500">
+                        No payment receipts found for this patient.
+                      </td>
+                    </tr>
+                  ) : (
+                    receipts.map(receipt => (
+                      <tr key={receipt._id || receipt.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                        <td className="px-6 py-4 font-mono text-sm text-slate-900 dark:text-slate-200">
+                          {receipt.receiptNumber}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-slate-500">
+                          {new Date(receipt.issuedAt || receipt.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 text-sm">
+                          <span className="text-success bg-success/10 px-2 py-1 rounded-full text-xs font-bold">ISSUED</span>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <Link to={`/receipts/${receipt._id || receipt.id}`} className="text-primary hover:text-primary/80 font-medium text-sm">
                             View
                           </Link>
                         </td>

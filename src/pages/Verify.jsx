@@ -22,7 +22,13 @@ export default function Verify() {
   useEffect(() => {
     let scanner = null;
     if (isScanning) {
-      scanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 250, height: 250 } }, false);
+      scanner = new Html5QrcodeScanner("reader", { 
+        fps: 10, 
+        qrbox: { width: 250, height: 250 },
+        experimentalFeatures: {
+          useBarCodeDetectorIfSupported: true
+        }
+      }, false);
       scanner.render(
         (decodedText) => {
           // Expected format: https://domain.com/verify?token=XXX

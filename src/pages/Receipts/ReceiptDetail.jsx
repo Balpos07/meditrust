@@ -14,7 +14,7 @@ export default function ReceiptDetail() {
   const fetchReceipt = async () => {
     try {
       const response = await api.get(`/receipts/${id}`);
-      setReceipt(response.data.data);
+      setReceipt(response.data.data || response.data.receipt || response.data);
     } catch (error) {
       toast.error('Failed to load receipt');
     } finally {
