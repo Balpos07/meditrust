@@ -5,24 +5,36 @@ import { ShieldCheck, Activity, Lock, Database, ArrowRight, Zap, CheckCircle2, F
 export default function Landing() {
   const features = [
     {
-      icon: <ShieldCheck className="w-8 h-8 text-primary" aria-hidden="true" />,
-      title: 'Blockchain Verified',
-      description: 'Every medical receipt and record is cryptographically signed and verifiable, ensuring absolute data integrity.'
+      icon: <ShieldCheck className="w-10 h-10 text-primary" aria-hidden="true" />,
+      title: 'Blockchain Verified Integrity',
+      description: 'Every medical receipt and record is cryptographically signed and verifiable, ensuring absolute data integrity. Trust is baked into the protocol, preventing tampering at every level.',
+      className: 'lg:col-span-2 md:col-span-2',
+      large: true,
+      gradient: 'from-primary/10 to-transparent'
     },
     {
       icon: <Lock className="w-8 h-8 text-success" aria-hidden="true" />,
       title: 'Role-Based Security',
-      description: 'Granular access controls ensure that sensitive patient data is only accessible to authorized medical personnel.'
+      description: 'Granular access controls ensure that sensitive patient data is only accessible to authorized medical personnel.',
+      className: 'lg:col-span-1 md:col-span-1',
+      large: false,
+      gradient: 'from-success/10 to-transparent'
     },
     {
       icon: <Database className="w-8 h-8 text-sky-500" aria-hidden="true" />,
       title: 'Immutable Ledger',
-      description: 'Historical records cannot be altered or deleted, providing a complete, trustworthy audit trail.'
+      description: 'Historical records cannot be altered or deleted, providing a complete, trustworthy audit trail.',
+      className: 'lg:col-span-1 md:col-span-1',
+      large: false,
+      gradient: 'from-sky-500/10 to-transparent'
     },
     {
-      icon: <Zap className="w-8 h-8 text-amber-500" aria-hidden="true" />,
-      title: 'Instant Verification',
-      description: 'Patients and auditors can verify receipt authenticity instantly using our public verification scanner.'
+      icon: <Zap className="w-10 h-10 text-amber-500" aria-hidden="true" />,
+      title: 'Instant Public Verification',
+      description: 'Patients and auditors can verify receipt authenticity instantly using our public verification scanner, bypassing traditional slow administrative procedures and overhead.',
+      className: 'lg:col-span-2 md:col-span-2',
+      large: true,
+      gradient: 'from-amber-500/10 to-transparent'
     }
   ];
 
@@ -153,29 +165,41 @@ export default function Landing() {
         </div>
       </div>
 
-      {/* Features Section */}
-      <section className="relative z-10 bg-slate-50 dark:bg-slate-900/50 py-24">
-        <div className="w-full mx-auto px-4 sm:px-6 lg:px-12">
+      {/* Features Section - Premium Bento Grid */}
+      <section className="relative z-10 bg-white dark:bg-slate-950 py-24 sm:py-32 overflow-hidden">
+        {/* Subtle background glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-5xl h-[500px] bg-primary/5 dark:bg-primary/10 blur-[120px] rounded-full pointer-events-none"></div>
+
+        <div className="w-full mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
           <div className="text-center mb-16 max-w-3xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-6">Uncompromising Security & Trust</h2>
-            <p className="text-lg text-slate-600 dark:text-slate-400">
+            <h2 className="text-4xl sm:text-5xl font-extrabold text-slate-900 dark:text-white mb-6 tracking-tight">
+              Uncompromising <span className="text-transparent bg-clip-text bg-gradient-to-r from-slate-600 to-slate-900 dark:from-slate-300 dark:to-white">Security & Trust</span>
+            </h2>
+            <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-400">
               We provide a foundational layer of trust for medical institutions, bridging the gap between healthcare providers, patients, and insurers.
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 w-full mx-auto">
             {features.map((feature, idx) => (
               <div 
                 key={idx} 
-                className="bg-white dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-2 hover:border-primary/50 group cursor-default"
+                className={`group relative bg-slate-50 dark:bg-slate-900/50 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800/60 rounded-3xl p-8 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden ${feature.className}`}
               >
-                <div className="w-14 h-14 rounded-xl bg-slate-50 dark:bg-slate-900 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-primary/10 transition-all duration-300 shadow-inner">
-                  {feature.icon}
+                {/* Hover Gradient Glow */}
+                <div className={`absolute top-0 left-0 w-full h-full bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none`}></div>
+                
+                <div className={`relative z-10 flex ${feature.large ? 'flex-col sm:flex-row items-start sm:items-center gap-8' : 'flex-col gap-6'} h-full`}>
+                  <div className={`shrink-0 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700 flex items-center justify-center group-hover:scale-110 transition-transform duration-500 shadow-sm ${feature.large ? 'w-20 h-20' : 'w-16 h-16'}`}>
+                    {feature.icon}
+                  </div>
+                  <div className="flex flex-col justify-center">
+                    <h3 className={`font-bold text-slate-900 dark:text-white mb-3 ${feature.large ? 'text-2xl sm:text-3xl' : 'text-xl'}`}>{feature.title}</h3>
+                    <p className={`text-slate-600 dark:text-slate-400 leading-relaxed ${feature.large ? 'text-base sm:text-lg' : 'text-sm'}`}>
+                      {feature.description}
+                    </p>
+                  </div>
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">{feature.title}</h3>
-                <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-sm">
-                  {feature.description}
-                </p>
               </div>
             ))}
           </div>
