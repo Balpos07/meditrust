@@ -1,29 +1,33 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 // Force re-deployment update for routing and navigation
 import { BrowserRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { ErrorBoundary } from 'react-error-boundary';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
 import PermissionGate from './components/PermissionGate';
+import ErrorFallback from './components/ErrorFallback';
+import Loader from './components/Loader';
 
 // Icons
 import { Stethoscope, ShieldCheck, Activity, Menu, X, Sun, Moon, LogOut, Users, FileText, Settings as SettingsIcon, Bell } from 'lucide-react';
 
-// Pages
-import Login from './pages/Login';
-import Verify from './pages/Verify';
-import AdminDashboard from './pages/AdminDashboard';
-import PatientList from './pages/Patients/PatientList';
-import PatientCreate from './pages/Patients/PatientCreate';
-import PatientProfile from './pages/Patients/PatientProfile';
-import CreateInvoice from './pages/Billing/CreateInvoice';
-import InvoiceDetail from './pages/Billing/InvoiceDetail';
-import InvoiceList from './pages/Billing/InvoiceList';
-import ReceiptList from './pages/Receipts/ReceiptList';
-import ReceiptDetail from './pages/Receipts/ReceiptDetail';
-import NotificationList from './pages/Notifications/NotificationList';
-import AdminSettings from './pages/AdminSettings';
-import UserManagement from './pages/Users/UserManagement';
+// Pages (Lazy Loaded)
+const Login = lazy(() => import('./pages/Login'));
+const Verify = lazy(() => import('./pages/Verify'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const PatientList = lazy(() => import('./pages/Patients/PatientList'));
+const PatientCreate = lazy(() => import('./pages/Patients/PatientCreate'));
+const PatientProfile = lazy(() => import('./pages/Patients/PatientProfile'));
+const CreateInvoice = lazy(() => import('./pages/Billing/CreateInvoice'));
+const InvoiceDetail = lazy(() => import('./pages/Billing/InvoiceDetail'));
+const InvoiceList = lazy(() => import('./pages/Billing/InvoiceList'));
+const ReceiptList = lazy(() => import('./pages/Receipts/ReceiptList'));
+const ReceiptDetail = lazy(() => import('./pages/Receipts/ReceiptDetail'));
+const NotificationList = lazy(() => import('./pages/Notifications/NotificationList'));
+const AdminSettings = lazy(() => import('./pages/AdminSettings'));
+const UserManagement = lazy(() => import('./pages/Users/UserManagement'));
+const Landing = lazy(() => import('./pages/Landing'));
 
 const ProtectedRoute = ({ children }) => {
   const { token, loading } = useAuth();
@@ -67,7 +71,7 @@ function Navigation({ theme, toggleTheme }) {
         <div className="hidden md:flex items-center gap-6">
           {navLinks.map(link => (
             <PermissionGate key={link.path} permission={link.perm}>
-              <Link to={link.path} className={`flex items-center gap-2 transition-colors font-medium ${isActive(link.path) && link.path !== '/' ? 'text-primary' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}>
+              <Link to={link.path} className={`flex items-center gap-2 transition-colors font-medium focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none rounded-md px-1 ${isActive(link.path) && link.path !== '/' ? 'text-primary' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}>
                 {link.name}
               </Link>
             </PermissionGate>
@@ -92,22 +96,22 @@ function Navigation({ theme, toggleTheme }) {
               <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
                 Hi, {user?.firstName}
               </span>
-              <button onClick={logout} className="flex items-center gap-2 text-slate-500 hover:text-danger transition-colors font-medium text-sm">
-                <LogOut size={18} />
+              <button onClick={logout} aria-label="Logout" className="flex items-center gap-2 text-slate-500 hover:text-danger transition-colors font-medium text-sm focus-visible:ring-2 focus-visible:ring-danger/50 focus-visible:outline-none rounded-md p-1">
+                <LogOut size={18} aria-hidden="true" />
               </button>
               <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-2"></div>
             </>
           )}
 
-          <button onClick={toggleTheme} className="p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors" title="Toggle Dark Mode">
-            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          <button onClick={toggleTheme} aria-label="Toggle Dark Mode" className="p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none" title="Toggle Dark Mode">
+            {theme === 'dark' ? <Sun className="w-5 h-5" aria-hidden="true" /> : <Moon className="w-5 h-5" aria-hidden="true" />}
           </button>
         </div>
 
         {/* Mobile Hamburger & Theme Toggle */}
         <div className="md:hidden flex items-center gap-2">
-          <button onClick={toggleTheme} className="p-2.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors shadow-sm">
-            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          <button onClick={toggleTheme} aria-label="Toggle Dark Mode" className="p-2.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors shadow-sm focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none">
+            {theme === 'dark' ? <Sun className="w-5 h-5" aria-hidden="true" /> : <Moon className="w-5 h-5" aria-hidden="true" />}
           </button>
           <button 
             className={`p-2.5 rounded-full transition-all duration-300 shadow-sm ${isMenuOpen ? 'bg-primary text-white shadow-primary/30' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'}`}
@@ -180,26 +184,28 @@ function App() {
   const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
 
   return (
-    <AuthProvider>
-      <SocketProvider>
-        <BrowserRouter>
-          <div className="min-h-screen bg-background dark:bg-slate-950 bg-dots-pattern relative flex flex-col overflow-hidden text-text dark:text-slate-200 transition-colors duration-500">
-            <Toaster position="top-right" />
-            {/* Premium Background Decorations (Dark Mode Only) */}
-            <div className="hidden dark:block absolute top-0 inset-x-0 h-[500px] bg-gradient-to-b from-primary/10 to-transparent pointer-events-none z-0"></div>
-            <div className="hidden dark:block absolute top-1/4 left-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl -translate-x-1/2 pointer-events-none z-0 animate-breathe"></div>
-            <div className="hidden dark:block absolute bottom-1/4 right-0 w-[40rem] h-[40rem] bg-success/10 rounded-full blur-3xl translate-x-1/4 pointer-events-none z-0 animate-float"></div>
+    <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => window.location.reload()}>
+      <AuthProvider>
+        <SocketProvider>
+          <BrowserRouter>
+            <div className="min-h-screen bg-background dark:bg-slate-950 bg-dots-pattern relative flex flex-col overflow-hidden text-text dark:text-slate-200 transition-colors duration-500">
+              <Toaster position="top-right" />
+              {/* Premium Background Decorations (Dark Mode Only) */}
+              <div className="hidden dark:block absolute top-0 inset-x-0 h-[500px] bg-gradient-to-b from-primary/10 to-transparent pointer-events-none z-0"></div>
+              <div className="hidden dark:block absolute top-1/4 left-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl -translate-x-1/2 pointer-events-none z-0 animate-breathe"></div>
+              <div className="hidden dark:block absolute bottom-1/4 right-0 w-[40rem] h-[40rem] bg-success/10 rounded-full blur-3xl translate-x-1/4 pointer-events-none z-0 animate-float"></div>
 
-            <div className="w-full mx-auto flex flex-col flex-grow relative z-10">
-              <Navigation theme={theme} toggleTheme={toggleTheme} />
-              <main className="flex-grow relative">
-                <Routes>
+              <div className="w-full mx-auto flex flex-col flex-grow relative z-10">
+                <Navigation theme={theme} toggleTheme={toggleTheme} />
+                <main className="flex-grow relative">
+                  <Suspense fallback={<Loader fullScreen={true} />}>
+                    <Routes>
                   {/* Public Routes */}
+                  <Route path="/" element={<Landing />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/verify" element={<Verify />} />
 
                   {/* Protected Routes */}
-                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
                   
                   <Route path="/dashboard" element={
                     <ProtectedRoute><PermissionGate permission="DASHBOARD_READ"><AdminDashboard /></PermissionGate></ProtectedRoute>
@@ -243,13 +249,15 @@ function App() {
                   <Route path="/settings" element={
                     <ProtectedRoute><PermissionGate permission="ADMIN"><AdminSettings /></PermissionGate></ProtectedRoute>
                   } />
-                </Routes>
-              </main>
+                    </Routes>
+                  </Suspense>
+                </main>
+              </div>
             </div>
-          </div>
-        </BrowserRouter>
-      </SocketProvider>
-    </AuthProvider>
+          </BrowserRouter>
+        </SocketProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 
