@@ -31,7 +31,7 @@ export default function InvoiceList() {
     <div className="w-[95%] lg:w-[80%] mx-auto px-4 py-8 max-w-none">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Billing & Invoices</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">Billing & Invoices</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">Manage hospital billing and track payments.</p>
         </div>
         
@@ -43,7 +43,48 @@ export default function InvoiceList() {
       </div>
 
       <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Mobile Card List */}
+        <div className="md:hidden divide-y divide-slate-200 dark:divide-slate-800">
+          {loading ? (
+            <div className="px-6 py-12 text-center">
+              <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary mb-2" />
+              <p className="text-slate-500">Loading invoices...</p>
+            </div>
+          ) : invoices.length === 0 ? (
+            <div className="px-6 py-12 text-center text-slate-500">
+              No invoices found.
+            </div>
+          ) : (
+            invoices.map(invoice => (
+              <Link
+                key={invoice._id || invoice.id}
+                to={`/billing/${invoice._id || invoice.id}`}
+                className="block px-4 py-4 active:bg-slate-50 dark:active:bg-slate-800/50 transition-colors"
+              >
+                <div className="flex justify-between items-start gap-3">
+                  <div className="min-w-0">
+                    <p className="font-mono font-medium text-slate-900 dark:text-slate-200 truncate">{invoice.invoiceNumber}</p>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5 truncate">
+                      {invoice.patientId && typeof invoice.patientId === 'object'
+                        ? `${invoice.patientId.firstName || ''} ${invoice.patientId.lastName || ''}`.trim() || 'Unknown'
+                        : 'Unknown'}
+                    </p>
+                  </div>
+                  {invoice.status === 'PAID' && <span className="shrink-0 text-success bg-success/10 px-2 py-1 rounded-full text-xs font-bold">PAID</span>}
+                  {invoice.status === 'PENDING_PAYMENT' && <span className="shrink-0 text-yellow-600 bg-yellow-500/10 px-2 py-1 rounded-full text-xs font-bold">PENDING</span>}
+                  {invoice.status === 'PARTIALLY_PAID' && <span className="shrink-0 text-orange-600 bg-orange-500/10 px-2 py-1 rounded-full text-xs font-bold">PARTIAL</span>}
+                  {invoice.status === 'CANCELLED' && <span className="shrink-0 text-danger bg-danger/10 px-2 py-1 rounded-full text-xs font-bold">CANCELLED</span>}
+                </div>
+                <p className="font-mono font-medium text-slate-600 dark:text-slate-300 text-sm mt-2">
+                  {new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(invoice.grandTotal)}
+                </p>
+              </Link>
+            ))
+          )}
+        </div>
+
+        {/* Desktop Table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-sm uppercase tracking-wider">
@@ -75,7 +116,9 @@ export default function InvoiceList() {
                       {invoice.invoiceNumber}
                     </td>
                     <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">
-                      {invoice.patientId ? "Linked Patient" : "Unknown"} {/* In a real app, backend returns patient details embedded or we show ID */}
+                      {invoice.patientId && typeof invoice.patientId === 'object'
+                        ? `${invoice.patientId.firstName || ''} ${invoice.patientId.lastName || ''}`.trim() || 'Unknown'
+                        : 'Unknown'}
                     </td>
                     <td className="px-6 py-4 font-mono font-medium text-slate-600 dark:text-slate-300">
                       {new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(invoice.grandTotal)}

@@ -37,7 +37,7 @@ export default function PatientList() {
     <div className="w-[95%] lg:w-[80%] mx-auto px-4 py-8 max-w-none">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Patient Directory</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">Patient Directory</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">Manage hospital patients and records.</p>
         </div>
         
@@ -68,8 +68,43 @@ export default function PatientList() {
           </div>
         </div>
 
-        {/* Table */}
-        <div className="overflow-x-auto">
+        {/* Mobile Card List */}
+        <div className="md:hidden divide-y divide-slate-200 dark:divide-slate-800">
+          {loading ? (
+            <div className="px-6 py-12 text-center">
+              <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary mb-2" />
+              <p className="text-slate-500">Loading patients...</p>
+            </div>
+          ) : patients.length === 0 ? (
+            <div className="px-6 py-12 text-center text-slate-500">
+              No patients found matching your search.
+            </div>
+          ) : (
+            patients.map(patient => (
+              <Link
+                key={patient._id || patient.id}
+                to={`/patients/${patient._id || patient.id}`}
+                className="block px-4 py-4 active:bg-slate-50 dark:active:bg-slate-800/50 transition-colors"
+              >
+                <div className="flex justify-between items-start gap-3">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-slate-900 dark:text-white truncate">
+                      {patient.firstName} {patient.lastName}
+                    </p>
+                    <p className="font-mono text-primary text-sm mt-0.5">{patient.patientNumber}</p>
+                  </div>
+                  <span className="inline-flex shrink-0 items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200">
+                    {patient.gender}
+                  </span>
+                </div>
+                <p className="text-slate-500 dark:text-slate-400 text-sm mt-2">{patient.phone}</p>
+              </Link>
+            ))
+          )}
+        </div>
+
+        {/* Desktop Table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-sm uppercase tracking-wider">

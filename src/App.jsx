@@ -5,6 +5,7 @@ import { Toaster } from 'react-hot-toast';
 import { ErrorBoundary } from 'react-error-boundary';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
+import { NotificationsProvider, useNotifications } from './context/NotificationsContext';
 import PermissionGate from './components/PermissionGate';
 import ErrorFallback from './components/ErrorFallback';
 import Loader from './components/Loader';
@@ -47,6 +48,7 @@ function Navigation({ theme, toggleTheme }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const { user, token, logout } = useAuth();
+  const { unreadCount } = useNotifications() || {};
 
   const closeMenu = () => setIsMenuOpen(false);
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
@@ -78,8 +80,13 @@ function Navigation({ theme, toggleTheme }) {
           ))}
           
           <PermissionGate permission="DASHBOARD_READ">
-            <Link to="/notifications" className={`flex items-center gap-2 transition-colors font-medium ${isActive('/notifications') ? 'text-primary' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}>
+            <Link to="/notifications" className={`relative flex items-center gap-2 transition-colors font-medium ${isActive('/notifications') ? 'text-primary' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}>
               <Bell className="w-5 h-5" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-2 -right-2 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-danger text-white text-[10px] font-bold leading-none">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
             </Link>
           </PermissionGate>
 
@@ -138,6 +145,18 @@ function Navigation({ theme, toggleTheme }) {
                 </Link>
               </PermissionGate>
             ))}
+            <PermissionGate permission="DASHBOARD_READ">
+              <Link to="/notifications" onClick={closeMenu} className={`flex items-center gap-4 p-4 rounded-xl transition-all duration-200 font-medium ${isActive('/notifications') ? 'bg-primary/10 text-primary scale-[0.98]' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:scale-[0.98]'}`}>
+                <span className="relative"><Bell className="w-6 h-6" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-[16px] px-1 flex items-center justify-center rounded-full bg-danger text-white text-[9px] font-bold leading-none">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </span>
+                <span className="text-lg">Notifications</span>
+              </Link>
+            </PermissionGate>
             {user?.role?.name === 'ADMIN' && (
               <Link to="/settings" onClick={closeMenu} className={`flex items-center gap-4 p-4 rounded-xl transition-all duration-200 font-medium ${isActive('/settings') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 scale-[0.98]' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:scale-[0.98]'}`}>
                 <SettingsIcon className="w-6 h-6" /> <span className="text-lg">Admin Settings</span>
@@ -184,16 +203,16 @@ function App() {
   const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
 
   return (
-    <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => window.location.reload()}>
-      <AuthProvider>
-        <SocketProvider>
-          <BrowserRouter>
-            <div className="min-h-screen bg-background dark:bg-slate-950 bg-dots-pattern relative flex flex-col overflow-hidden text-text dark:text-slate-200 transition-colors duration-500">
-              <Toaster position="top-right" />
-              {/* Premium Background Decorations (Dark Mode Only) */}
-              <div className="hidden dark:block absolute top-0 inset-x-0 h-[500px] bg-gradient-to-b from-primary/10 to-transparent pointer-events-none z-0"></div>
-              <div className="hidden dark:block absolute top-1/4 left-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl -translate-x-1/2 pointer-events-none z-0 animate-breathe"></div>
-              <div className="hidden dark:block absolute bottom-1/4 right-0 w-[40rem] h-[40rem] bg-success/10 rounded-full blur-3xl translate-x-1/4 pointer-events-none z-0 animate-float"></div>
+    <AuthProvider>
+      <SocketProvider>
+        <NotificationsProvider>
+        <BrowserRouter>
+          <div className="min-h-screen bg-background dark:bg-slate-950 bg-dots-pattern relative flex flex-col overflow-hidden text-text dark:text-slate-200 transition-colors duration-500">
+            <Toaster position="top-right" />
+            {/* Premium Background Decorations (Dark Mode Only) */}
+            <div className="hidden dark:block absolute top-0 inset-x-0 h-[500px] bg-gradient-to-b from-primary/10 to-transparent pointer-events-none z-0"></div>
+            <div className="hidden dark:block absolute top-1/4 left-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl -translate-x-1/2 pointer-events-none z-0 animate-breathe"></div>
+            <div className="hidden dark:block absolute bottom-1/4 right-0 w-[40rem] h-[40rem] bg-success/10 rounded-full blur-3xl translate-x-1/4 pointer-events-none z-0 animate-float"></div>
 
               <div className="w-full mx-auto flex flex-col flex-grow relative z-10">
                 <Navigation theme={theme} toggleTheme={toggleTheme} />
@@ -249,15 +268,14 @@ function App() {
                   <Route path="/settings" element={
                     <ProtectedRoute><PermissionGate permission="ADMIN"><AdminSettings /></PermissionGate></ProtectedRoute>
                   } />
-                    </Routes>
-                  </Suspense>
-                </main>
-              </div>
+                </Routes>
+              </main>
             </div>
-          </BrowserRouter>
-        </SocketProvider>
-      </AuthProvider>
-    </ErrorBoundary>
+          </div>
+        </BrowserRouter>
+        </NotificationsProvider>
+      </SocketProvider>
+    </AuthProvider>
   );
 }
 

@@ -15,8 +15,16 @@ export default function InvoiceDetail() {
   const fetchInvoice = async () => {
     try {
       const response = await api.get(`/billing/invoices/${invoiceId}`);
-      console.log('Fetched Invoice from backend:', response.data.data);
-      setInvoice(response.data.data);
+      const fetchedInvoice = response.data.data;
+      console.log('Fetched Invoice from backend:', fetchedInvoice);
+      // The backend populates the linked virtual account under `virtualAccountId`
+      // (the schema's ref field name), not `virtualAccount`. Normalize it here so the
+      // UI shows already-generated accounts immediately instead of waiting forever
+      // for a socket event that may have already fired before this page was open.
+      setInvoice({
+        ...fetchedInvoice,
+        virtualAccount: fetchedInvoice.virtualAccountId || fetchedInvoice.virtualAccount || null,
+      });
     } catch (error) {
       toast.error('Failed to load invoice');
     } finally {
@@ -29,7 +37,13 @@ export default function InvoiceDetail() {
   }, [invoiceId]);
 
   useEffect(() => {
-    if (!socket || !invoice) return;
+    // Join and attach listeners as soon as the socket is available — do NOT wait for
+    // the invoice to finish loading first. Virtual account generation kicks off on the
+    // backend the moment the invoice is created (often completing within a second or
+    // two), so gating this on `invoice` delayed attachment long enough that the
+    // 'virtual_account.created' broadcast would already have been sent and missed,
+    // leaving the UI stuck on "Generating Accounts..." until a manual page refresh.
+    if (!socket || !invoiceId) return;
 
     // Join the specific invoice room
     socket.emit('join_room', `invoice:${invoiceId}`, (response) => {
@@ -42,7 +56,7 @@ export default function InvoiceDetail() {
       if (String(incomingId) === String(invoiceId)) {
         // Handle case where virtualAccount is nested or is the root object
         const vaData = data.virtualAccount ? data.virtualAccount : data;
-        setInvoice(prev => ({ ...prev, virtualAccount: vaData }));
+        setInvoice(prev => (prev ? { ...prev, virtualAccount: vaData } : prev));
         toast.success('Payment accounts generated!');
       }
     };
@@ -51,7 +65,7 @@ export default function InvoiceDetail() {
       console.log('Socket event payment.completed:', data);
       const incomingId = data.invoiceId || data.id || data._id;
       if (String(incomingId) === String(invoiceId)) {
-        setInvoice(prev => ({ ...prev, status: 'PAID' }));
+        setInvoice(prev => (prev ? { ...prev, status: 'PAID' } : prev));
         toast.success('Payment received successfully!', { duration: 5000, icon: '🎉' });
       }
     };
@@ -63,7 +77,8 @@ export default function InvoiceDetail() {
       socket.off('virtual_account.created', handleVirtualAccountCreated);
       socket.off('payment.completed', handlePaymentCompleted);
     };
-  }, [socket, invoiceId, invoice]);
+  }, [socket, invoiceId]);
+
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
@@ -90,13 +105,13 @@ export default function InvoiceDetail() {
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
         <div>
-          <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Invoice Detail</h1>
+          <div className="flex flex-wrap items-center gap-3 mb-1">
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">Invoice Detail</h1>
             {invoice.status === 'PAID' && <span className="text-success bg-success/10 px-3 py-1 rounded-full text-sm font-bold border border-success/20 flex items-center gap-1"><CheckCircle className="w-4 h-4" /> PAID</span>}
             {invoice.status === 'PENDING_PAYMENT' && <span className="text-yellow-600 bg-yellow-500/10 px-3 py-1 rounded-full text-sm font-bold border border-yellow-500/20">PENDING</span>}
             {invoice.status === 'CANCELLED' && <span className="text-danger bg-danger/10 px-3 py-1 rounded-full text-sm font-bold border border-danger/20">CANCELLED</span>}
           </div>
-          <p className="font-mono text-slate-500 dark:text-slate-400">{invoice.invoiceNumber}</p>
+          <p className="font-mono text-slate-500 dark:text-slate-400 break-all">{invoice.invoiceNumber}</p>
         </div>
       </div>
 

@@ -54,7 +54,7 @@ export default function AdminDashboard() {
     <div className="w-[95%] lg:w-[80%] mx-auto px-4 py-8 max-w-none">
       <div className="flex justify-between items-end mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Dashboard Overview</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">Dashboard Overview</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
             Real-time hospital metrics
             <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800">
