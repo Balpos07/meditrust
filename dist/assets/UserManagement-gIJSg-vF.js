@@ -1,0 +1,6 @@
+import{c as t,j as e,U as s}from"./index-BjUdJhZb.js";/**
+ * @license lucide-react v0.323.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */const a=t("Shield",[["path",{d:"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10",key:"1irkt0"}]]);function r(){return e.jsxs("div",{className:"w-[95%] lg:w-[80%] mx-auto px-4 py-8 max-w-none",children:[e.jsxs("div",{className:"mb-8",children:[e.jsxs("h1",{className:"text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-3",children:[e.jsx(s,{className:"w-8 h-8 text-primary"})," User Management"]}),e.jsx("p",{className:"text-slate-500 dark:text-slate-400 mt-1",children:"Manage hospital staff roles and permissions."})]}),e.jsxs("div",{className:"bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-12 text-center",children:[e.jsx(a,{className:"w-16 h-16 text-slate-300 dark:text-slate-700 mx-auto mb-4"}),e.jsx("h2",{className:"text-xl font-bold text-slate-700 dark:text-slate-300",children:"Coming Soon"}),e.jsx("p",{className:"text-slate-500 mt-2 max-w-md mx-auto",children:"User management and role-based access control configuration UI will be implemented in the next phase."})]})]})}export{r as default};
