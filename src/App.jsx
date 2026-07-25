@@ -203,10 +203,11 @@ function App() {
   const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
 
   return (
-    <AuthProvider>
-      <SocketProvider>
-        <NotificationsProvider>
-        <BrowserRouter>
+    <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => window.location.reload()}>
+      <AuthProvider>
+        <SocketProvider>
+          <NotificationsProvider>
+          <BrowserRouter>
           <div className="min-h-screen bg-background dark:bg-slate-950 bg-dots-pattern relative flex flex-col overflow-hidden text-text dark:text-slate-200 transition-colors duration-500">
             <Toaster position="top-right" />
             {/* Premium Background Decorations (Dark Mode Only) */}
@@ -269,13 +270,15 @@ function App() {
                     <ProtectedRoute><PermissionGate permission="ADMIN"><AdminSettings /></PermissionGate></ProtectedRoute>
                   } />
                 </Routes>
+                </Suspense>
               </main>
             </div>
           </div>
-        </BrowserRouter>
-        </NotificationsProvider>
-      </SocketProvider>
-    </AuthProvider>
+          </BrowserRouter>
+          </NotificationsProvider>
+        </SocketProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 
