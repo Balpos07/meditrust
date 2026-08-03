@@ -9,6 +9,9 @@ import { NotificationsProvider, useNotifications } from './context/Notifications
 import PermissionGate from './components/PermissionGate';
 import ErrorFallback from './components/ErrorFallback';
 import Loader from './components/Loader';
+import CommandPalette from './components/CommandPalette';
+import ScrollToTop from './components/ScrollToTop';
+import { AnimatePresence } from 'framer-motion';
 
 // Icons
 import { Stethoscope, ShieldCheck, Activity, Menu, X, Sun, Moon, LogOut, Users, FileText, Settings as SettingsIcon, Bell } from 'lucide-react';
@@ -188,6 +191,83 @@ function Navigation({ theme, toggleTheme }) {
   );
 }
 
+function MainApp({ theme, toggleTheme }) {
+  const location = useLocation();
+
+  return (
+    <div className="min-h-screen bg-background dark:bg-slate-950 bg-dots-pattern relative flex flex-col overflow-hidden text-text dark:text-slate-200 transition-colors duration-500">
+      <Toaster position="top-right" />
+      <CommandPalette />
+      <ScrollToTop />
+      
+      {/* Premium Background Decorations (Dark Mode Only) */}
+      <div className="hidden dark:block absolute top-0 inset-x-0 h-[500px] bg-gradient-to-b from-primary/10 to-transparent pointer-events-none z-0"></div>
+      <div className="hidden dark:block absolute top-1/4 left-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl -translate-x-1/2 pointer-events-none z-0 animate-breathe"></div>
+      <div className="hidden dark:block absolute bottom-1/4 right-0 w-[40rem] h-[40rem] bg-success/10 rounded-full blur-3xl translate-x-1/4 pointer-events-none z-0 animate-float"></div>
+
+      <div className="w-full mx-auto flex flex-col flex-grow relative z-10">
+        <Navigation theme={theme} toggleTheme={toggleTheme} />
+        <main className="flex-grow relative">
+          <Suspense fallback={<Loader fullScreen={true} />}>
+            <AnimatePresence mode="wait">
+              <Routes location={location} key={location.pathname}>
+                {/* Public Routes */}
+                <Route path="/" element={<Landing />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/verify" element={<Verify />} />
+
+                {/* Protected Routes */}
+                <Route path="/dashboard" element={
+                  <ProtectedRoute><PermissionGate permission="DASHBOARD_READ"><AdminDashboard /></PermissionGate></ProtectedRoute>
+                } />
+
+                <Route path="/patients" element={
+                  <ProtectedRoute><PermissionGate permission="PATIENTS_READ"><PatientList /></PermissionGate></ProtectedRoute>
+                } />
+                <Route path="/patients/new" element={
+                  <ProtectedRoute><PermissionGate permission="PATIENTS_CREATE"><PatientCreate /></PermissionGate></ProtectedRoute>
+                } />
+                <Route path="/patients/:id" element={
+                  <ProtectedRoute><PermissionGate permission="PATIENTS_READ"><PatientProfile /></PermissionGate></ProtectedRoute>
+                } />
+
+                <Route path="/billing" element={
+                  <ProtectedRoute><PermissionGate permission="INVOICES_READ"><InvoiceList /></PermissionGate></ProtectedRoute>
+                } />
+                <Route path="/billing/new" element={
+                  <ProtectedRoute><PermissionGate permission="INVOICES_CREATE"><CreateInvoice /></PermissionGate></ProtectedRoute>
+                } />
+                <Route path="/billing/:invoiceId" element={
+                  <ProtectedRoute><PermissionGate permission="INVOICES_READ"><InvoiceDetail /></PermissionGate></ProtectedRoute>
+                } />
+
+                <Route path="/receipts" element={
+                  <ProtectedRoute><PermissionGate permission="RECEIPTS_READ"><ReceiptList /></PermissionGate></ProtectedRoute>
+                } />
+                <Route path="/receipts/:id" element={
+                  <ProtectedRoute><PermissionGate permission="RECEIPTS_READ"><ReceiptDetail /></PermissionGate></ProtectedRoute>
+                } />
+
+                <Route path="/notifications" element={
+                  <ProtectedRoute><PermissionGate permission="DASHBOARD_READ"><NotificationList /></PermissionGate></ProtectedRoute>
+                } />
+
+                <Route path="/users" element={
+                  <ProtectedRoute><PermissionGate permission="ADMIN"><UserManagement /></PermissionGate></ProtectedRoute>
+                } />
+
+                <Route path="/settings" element={
+                  <ProtectedRoute><PermissionGate permission="ADMIN"><AdminSettings /></PermissionGate></ProtectedRoute>
+                } />
+              </Routes>
+            </AnimatePresence>
+          </Suspense>
+        </main>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
 
@@ -207,74 +287,9 @@ function App() {
       <AuthProvider>
         <SocketProvider>
           <NotificationsProvider>
-          <BrowserRouter>
-          <div className="min-h-screen bg-background dark:bg-slate-950 bg-dots-pattern relative flex flex-col overflow-hidden text-text dark:text-slate-200 transition-colors duration-500">
-            <Toaster position="top-right" />
-            {/* Premium Background Decorations (Dark Mode Only) */}
-            <div className="hidden dark:block absolute top-0 inset-x-0 h-[500px] bg-gradient-to-b from-primary/10 to-transparent pointer-events-none z-0"></div>
-            <div className="hidden dark:block absolute top-1/4 left-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl -translate-x-1/2 pointer-events-none z-0 animate-breathe"></div>
-            <div className="hidden dark:block absolute bottom-1/4 right-0 w-[40rem] h-[40rem] bg-success/10 rounded-full blur-3xl translate-x-1/4 pointer-events-none z-0 animate-float"></div>
-
-              <div className="w-full mx-auto flex flex-col flex-grow relative z-10">
-                <Navigation theme={theme} toggleTheme={toggleTheme} />
-                <main className="flex-grow relative">
-                  <Suspense fallback={<Loader fullScreen={true} />}>
-                    <Routes>
-                  {/* Public Routes */}
-                  <Route path="/" element={<Landing />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/verify" element={<Verify />} />
-
-                  {/* Protected Routes */}
-                  
-                  <Route path="/dashboard" element={
-                    <ProtectedRoute><PermissionGate permission="DASHBOARD_READ"><AdminDashboard /></PermissionGate></ProtectedRoute>
-                  } />
-
-                  <Route path="/patients" element={
-                    <ProtectedRoute><PermissionGate permission="PATIENTS_READ"><PatientList /></PermissionGate></ProtectedRoute>
-                  } />
-                  <Route path="/patients/new" element={
-                    <ProtectedRoute><PermissionGate permission="PATIENTS_CREATE"><PatientCreate /></PermissionGate></ProtectedRoute>
-                  } />
-                  <Route path="/patients/:id" element={
-                    <ProtectedRoute><PermissionGate permission="PATIENTS_READ"><PatientProfile /></PermissionGate></ProtectedRoute>
-                  } />
-
-                  <Route path="/billing" element={
-                    <ProtectedRoute><PermissionGate permission="INVOICES_READ"><InvoiceList /></PermissionGate></ProtectedRoute>
-                  } />
-                  <Route path="/billing/new" element={
-                    <ProtectedRoute><PermissionGate permission="INVOICES_CREATE"><CreateInvoice /></PermissionGate></ProtectedRoute>
-                  } />
-                  <Route path="/billing/:invoiceId" element={
-                    <ProtectedRoute><PermissionGate permission="INVOICES_READ"><InvoiceDetail /></PermissionGate></ProtectedRoute>
-                  } />
-
-                  <Route path="/receipts" element={
-                    <ProtectedRoute><PermissionGate permission="RECEIPTS_READ"><ReceiptList /></PermissionGate></ProtectedRoute>
-                  } />
-                  <Route path="/receipts/:id" element={
-                    <ProtectedRoute><PermissionGate permission="RECEIPTS_READ"><ReceiptDetail /></PermissionGate></ProtectedRoute>
-                  } />
-
-                  <Route path="/notifications" element={
-                    <ProtectedRoute><PermissionGate permission="DASHBOARD_READ"><NotificationList /></PermissionGate></ProtectedRoute>
-                  } />
-
-                  <Route path="/users" element={
-                    <ProtectedRoute><PermissionGate permission="ADMIN"><UserManagement /></PermissionGate></ProtectedRoute>
-                  } />
-
-                  <Route path="/settings" element={
-                    <ProtectedRoute><PermissionGate permission="ADMIN"><AdminSettings /></PermissionGate></ProtectedRoute>
-                  } />
-                </Routes>
-                </Suspense>
-              </main>
-            </div>
-          </div>
-          </BrowserRouter>
+            <BrowserRouter>
+              <MainApp theme={theme} toggleTheme={toggleTheme} />
+            </BrowserRouter>
           </NotificationsProvider>
         </SocketProvider>
       </AuthProvider>

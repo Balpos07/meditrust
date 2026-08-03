@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { Search, Plus, UserPlus, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import api from '../../lib/axios';
 import PermissionGate from '../../components/PermissionGate';
+import PageTransition from '../../components/PageTransition';
+import Skeleton from '../../components/Skeleton';
 
 export default function PatientList() {
   const [patients, setPatients] = useState([]);
@@ -34,7 +36,7 @@ export default function PatientList() {
   }, [search, page]);
 
   return (
-    <div className="w-[95%] lg:w-[80%] mx-auto px-4 py-8 max-w-none">
+    <PageTransition className="w-[95%] lg:w-[80%] mx-auto px-4 py-8 max-w-none">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">Patient Directory</h1>
@@ -71,9 +73,19 @@ export default function PatientList() {
         {/* Mobile Card List */}
         <div className="md:hidden divide-y divide-slate-200 dark:divide-slate-800">
           {loading ? (
-            <div className="px-6 py-12 text-center">
-              <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary mb-2" />
-              <p className="text-slate-500">Loading patients...</p>
+            <div className="px-4 py-4 space-y-4">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="flex flex-col gap-2">
+                  <div className="flex justify-between items-start">
+                    <div className="flex flex-col gap-1 w-2/3">
+                      <Skeleton className="h-5 w-3/4" />
+                      <Skeleton className="h-4 w-1/2" />
+                    </div>
+                    <Skeleton className="h-5 w-12 rounded-full" />
+                  </div>
+                  <Skeleton className="h-4 w-1/3" />
+                </div>
+              ))}
             </div>
           ) : patients.length === 0 ? (
             <div className="px-6 py-12 text-center text-slate-500">
@@ -117,12 +129,17 @@ export default function PatientList() {
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
               {loading ? (
-                <tr>
-                  <td colSpan="5" className="px-6 py-12 text-center">
-                    <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary mb-2" />
-                    <p className="text-slate-500">Loading patients...</p>
-                  </td>
-                </tr>
+                <>
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                    <tr key={i}>
+                      <td className="px-6 py-4"><Skeleton className="h-5 w-20" /></td>
+                      <td className="px-6 py-4"><Skeleton className="h-5 w-40" /></td>
+                      <td className="px-6 py-4"><Skeleton className="h-5 w-32" /></td>
+                      <td className="px-6 py-4"><Skeleton className="h-5 w-16 rounded-full" /></td>
+                      <td className="px-6 py-4 text-right"><Skeleton className="h-5 w-24 ml-auto" /></td>
+                    </tr>
+                  ))}
+                </>
               ) : patients.length === 0 ? (
                 <tr>
                   <td colSpan="5" className="px-6 py-12 text-center text-slate-500">
@@ -186,6 +203,6 @@ export default function PatientList() {
           </div>
         )}
       </div>
-    </div>
+    </PageTransition>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Activity, Users, FileText, CheckCircle, Clock, Loader2 } from 'lucide-react';
+import PageTransition from '../components/PageTransition';
 import api from '../lib/axios';
 import { useSocket } from '../context/SocketContext';
 import toast from 'react-hot-toast';
@@ -70,7 +71,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="w-[95%] lg:w-[80%] mx-auto px-4 py-8 max-w-none">
+    <PageTransition className="w-[95%] lg:w-[80%] mx-auto px-4 py-8 max-w-none">
       <div className="flex justify-between items-end mb-8">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">Dashboard Overview</h1>
@@ -189,6 +190,6 @@ export default function AdminDashboard() {
           </button>
         </div>
       </div>
-    </div>
+    </PageTransition>
   );
 }
